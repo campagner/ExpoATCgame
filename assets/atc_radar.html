@@ -718,6 +718,8 @@ const AC_GROWTH_FACTOR = 1.05; // fator de crescimento de aeronaves por nível
 const AUTO_CURVE_FACTOR = 0.75; // -25% no fator das curvas automáticas (mais curvas)
 const FL_MIN = 130;            // faixa de níveis muito reduzida (110 níveis de diferença)
 const FL_MAX = 220;
+const SAME_FL_SPAWN_BIAS = 0.72; // probabilidade de nascer no mesmo FL de outra aeronave
+const SAME_FL_CHANGE_BIAS = 0.68; // probabilidade de mudança de FL para igualar outro tráfego
 let W, H, CX, CY, R;
 
 let sweepAngle  = 0;
@@ -917,6 +919,18 @@ function randomDep(dest) {
   return d;
 }
 
+function randomFL() {
+  return rndInt(FL_MIN / 10, FL_MAX / 10) * 10;
+}
+
+function pickConflictFL(excludeId = null) {
+  const pool = aircraft
+    .filter(ac => ac.id !== excludeId)
+    .map(ac => ac.fl)
+    .filter(fl => fl >= FL_MIN && fl <= FL_MAX);
+  return pool.length ? pick(pool) : null;
+}
+
 // ── SPAWN ─────────────────────────────────────
 function spawnAC() {
   // Spawn nas bordas retangulares da tela
@@ -952,6 +966,10 @@ function spawnAC() {
   // Aumenta conforme nível, com boost global de velocidade
   const spd = gs * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
   const aircraftType = isHarpia ? pick(HELI_TYPES) : pick(TYPES);
+  const conflictFL = pickConflictFL();
+  const initialFL = (conflictFL !== null && Math.random() < SAME_FL_SPAWN_BIAS)
+    ? conflictFL
+    : randomFL();
 
   const newAircraft = {
     id:       Symbol(),
@@ -962,7 +980,7 @@ function spawnAC() {
     x: ex, y: ey,
     hdg, targetHdg: hdg,
     speed: spd, gs,
-    fl:       rndInt(FL_MIN / 10, FL_MAX / 10) * 10,
+    fl:       initialFL,
     sweepBright: 0,
     conflict: false,
     age:      0,
@@ -1028,9 +1046,14 @@ function update() {
       // Frequência de mudanças aumenta com o nível
       const flChangeChance = Math.min(0.5, 0.05 + (level - 5) * 0.08);
       if (Math.random() < flChangeChance) {
-        // Muda para um nível aleatório diferente (±2 a ±4 níveis)
-        const flChange = (rndInt(-4, 4) + (rndInt(0, 1) ? 1 : -1)) * 10;
-        ac.fl = Math.max(FL_MIN, Math.min(FL_MAX, ac.fl + flChange));
+        const conflictFL = pickConflictFL(ac.id);
+        if (conflictFL !== null && Math.random() < SAME_FL_CHANGE_BIAS) {
+          ac.fl = conflictFL;
+        } else {
+          // Muda para um nível aleatório diferente (±2 a ±4 níveis)
+          const flChange = (rndInt(-4, 4) + (rndInt(0, 1) ? 1 : -1)) * 10;
+          ac.fl = Math.max(FL_MIN, Math.min(FL_MAX, ac.fl + flChange));
+        }
       }
       // Próxima mudança de FL em 300-800 frames
       ac.nextFlChangeFrame = ac.age + rndInt(300, 800 - level*40);
