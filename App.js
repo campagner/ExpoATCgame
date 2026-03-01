@@ -1,9 +1,3 @@
-// ─────────────────────────────────────────────────────
-//  ATC RADAR — Expo WebView wrapper
-//  1. npx expo install expo-web-view
-//  2. Coloque atc_radar.html em /assets/atc_radar.html
-//  3. Substitua este App.js
-// ─────────────────────────────────────────────────────
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';

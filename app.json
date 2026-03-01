@@ -25,9 +25,9 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-  "expo": {
-    "assetBundlePatterns": ["assets/*"]
-  },
+    "assetBundlePatterns": [
+      "assets/*"
+    ],
     "plugins": [
       "expo-asset"
     ]
