@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "jogoradar",
-    "slug": "jogoradar",
+    "name": "ATC Radar SBVT",
+    "slug": "atc-radar-sbvt",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,6 +24,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+  "expo": {
+    "assetBundlePatterns": ["assets/*"]
+  },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }

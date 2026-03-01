@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>ATC RADAR</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+:root {
+  --green:      #cccccc;
+  --green-dim:  #aaaaaa;
+  --green-dark: #555555;
+  --amber:      #ffcc00;
+  --red:        #ff3333;
+  --cyan:       #bbbbbb;
+  --bg:         #3a3a3a;
+  --panel:      #4a4a4a;
+  --border:     #7a7a7a;
+  --text:       #cccccc;
+  --dim:        #888888;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%; 
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  overflow: hidden;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--green);
+  touch-action: none;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.07) 3px,rgba(0,0,0,0.07) 4px);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center,transparent 50%,rgba(0,0,0,0.65) 100%);
+  pointer-events: none;
+  z-index: 999;
+}
+
+#app { 
+  display:flex; 
+  flex-direction:column; 
+  height:100vh; 
+  height: calc(100vh - env(safe-area-inset-bottom, 0px));
+  width:100vw; 
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ── TOPBAR ── */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--green);
+  background: #1a1a1a;
+  flex-shrink: 0;
+  gap: 12px;
+  z-index: 700;
+  margin-top: 0;
+  flex-wrap: wrap;
+}
+#topbar .title {
+  font-size: 13px;
+  color: #cccccc;
+  text-shadow: 0 0 8px #cccccc;
+  font-family: 'Orbitron', monospace;
+  flex: 1;
+}
+#topbar .meta {
+  font-size: 10px;
+  color: #cccccc;
+  text-shadow: 0 0 8px #cccccc;
+  font-family: 'Orbitron', monospace;
+}
+#topbar #clock {
+  font-size: 10px;
+  color: #cccccc;
+  text-shadow: 0 0 8px #cccccc;
+  font-family: 'Orbitron', monospace;
+  min-width: 60px;
+}
+#topbar .menu-buttons {
+  display: flex;
+  gap: 6px;
+}
+#topbar button {
+  background: transparent;
+  border: 2px solid #cccccc;
+  color: #cccccc;
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s;
+  text-shadow: 0 0 8px #cccccc;
+}
+#topbar button:hover {
+  background: rgba(200,200,200,0.15);
+  box-shadow: 0 0 15px #cccccc;
+}
+#topbar button:active {
+  background: #cccccc;
+  color: #000;
+  text-shadow: none;
+  box-shadow: 0 0 25px #cccccc;
+}
+
+/* ── MAIN ── */
+#main { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; }
+
+#radar-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  background: var(--bg);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#radar { 
+  display: block; 
+  touch-action: none; 
+  width: 100%;
+  height: 100%;
+}
+
+/* ── STRIPS BAR ── */
+#strips-bar {
+  height: 60px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  padding: 4px 8px;
+}
+.strips-label {
+  font-family: 'Orbitron', monospace;
+  font-size: 7px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--border);
+  min-width: 60px;
+}
+
+/* ── SIDEBAR ── */
+#sidebar {
+  height: 40px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.sb-section { 
+  padding: 4px 8px; 
+  border-bottom: 1px solid var(--border);
+  min-width: 110px;
+  flex-shrink: 0;
+}
+.sb-score {
+  min-width: 70px;
+}
+.sb-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 7px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+#score-display {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  color: var(--green);
+  text-shadow: 0 0 10px var(--green);
+  letter-spacing: 1px;
+}
+#level-display { font-size: 8px; color: var(--amber); margin-top: 1px; }
+
+#strips { flex:1; overflow-x:auto; overflow-y:hidden; display:flex; gap:3px; scrollbar-width:thin; scrollbar-color: var(--border) transparent; }
+
+.strip {
+  margin: 2px 0;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--green-dim);
+  background: rgba(200,200,200,0.03);
+  font-size: 8px;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+.strip:active { background: rgba(200,200,200,0.1); }
+.strip.selected { border-color: var(--amber); border-top-color: var(--amber); background: rgba(255,170,0,0.08); }
+.strip.conflict {
+  border-top-color: var(--red);
+  background: rgba(255,68,68,0.08);
+  animation: stripPulse 0.8s ease-in-out infinite alternate;
+}
+@keyframes stripPulse {
+  from { border-top-color: var(--red); }
+  to   { border-top-color:#ff9999; box-shadow:0 0 5px rgba(255,68,68,0.4); }
+}
+.strip .callsign {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--green);
+}
+.strip.selected .callsign { color: var(--amber); }
+.strip.conflict .callsign { color: var(--red); }
+.strip .route { color: var(--dim); font-size: 8px; }
+.strip .data  { color: var(--text); font-size: 8px; }
+
+/* ── STATUSBAR ── */
+#statusbar {
+  padding: 5px 10px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  font-size: 9px;
+  color: var(--dim);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+.alert { color: var(--red); font-weight: bold; animation: blink 0.6s step-end infinite; }
+@keyframes blink { 50% { opacity:0; } }
+
+/* ── REDIRECT PANEL ── */
+#redirect-panel {
+  position: absolute;
+  background: var(--panel);
+  border: 1px solid var(--amber);
+  box-shadow: 0 0 14px rgba(255,170,0,0.3);
+  padding: 8px 10px;
+  font-size: 10px;
+  z-index: 100;
+  min-width: 155px;
+  pointer-events: all;
+}
+#redirect-panel .rp-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: var(--amber);
+  letter-spacing: 1px;
+  margin-bottom: 7px;
+}
+.rp-btn {
+  display: block; width: 100%;
+  background: transparent;
+  border: 1px solid var(--green-dim);
+  color: var(--text);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  text-align: left;
+  padding: 5px 7px;
+  cursor: pointer;
+  margin-bottom: 3px;
+  transition: 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.rp-btn:active { border-color: var(--amber); color: var(--amber); background: rgba(255,170,0,0.1); }
+.rp-cancel {
+  display: block; width: 100%;
+  background: transparent; border: none;
+  color: var(--dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  padding: 4px 7px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 3px;
+}
+.rp-cancel:active { color: var(--red); }
+#redirect-panel.hidden { display:none; }
+
+/* ── MODAL ── */
+#modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88);
+  display: flex; align-items:center; justify-content:center;
+  z-index: 500;
+}
+#modal {
+  background: var(--panel);
+  border: 2px solid var(--green);
+  box-shadow: 0 0 40px rgba(200,200,200,0.3);
+  padding: 28px 32px;
+  text-align: center;
+  min-width: 260px;
+  max-width: 360px;
+  width: 88vw;
+}
+#modal h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 17px;
+  color: var(--green);
+  text-shadow: 0 0 10px var(--green);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+#modal .score-final {
+  font-family: 'Orbitron', monospace;
+  font-size: 34px;
+  color: var(--amber);
+  text-shadow: 0 0 14px var(--amber);
+  margin: 10px 0;
+}
+#modal p { font-size: 11px; color: var(--text); margin-bottom: 5px; line-height: 1.7; }
+#modal .name-entry {
+  margin-top: 14px;
+  text-align: left;
+}
+#modal .name-entry.hidden { display: none; }
+#modal .name-entry label {
+  display: block;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--amber);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+#player-name-input {
+  width: 100%;
+  background: #0f1115;
+  border: 1px solid var(--border);
+  color: var(--green);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 9px 10px;
+  outline: none;
+  text-transform: uppercase;
+}
+#player-name-input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 0 1px rgba(255,170,0,0.3);
+}
+#name-entry-tip {
+  margin-top: 6px;
+  font-size: 9px;
+  color: var(--dim);
+  text-align: left;
+}
+#modal button {
+  margin-top: 18px;
+  background: transparent;
+  border: 2px solid var(--green);
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding: 10px 24px;
+  cursor: pointer;
+  width: 100%;
+}
+#modal button:active { background: var(--green); color:#000; }
+#modal-overlay.hidden { display:none; }
+
+/* ── TELA INICIAL ── */
+#start-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95);
+  display: flex; align-items:center; justify-content:center;
+  z-index: 600;
+}
+#start-screen {
+  background: var(--panel);
+  border: 3px solid var(--green);
+  box-shadow: 0 0 50px rgba(200,200,200,0.4);
+  padding: 40px 36px;
+  text-align: center;
+  min-width: 280px;
+  max-width: 400px;
+  width: 90vw;
+}
+#start-screen h1 {
+  font-family: 'Orbitron', monospace;
+  font-size: 28px;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  margin-bottom: 8px;
+  letter-spacing: 4px;
+  font-weight: 900;
+}
+#start-screen .subtitle {
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  color: var(--amber);
+  text-shadow: 0 0 8px var(--amber);
+  margin-bottom: 30px;
+  letter-spacing: 3px;
+}
+#start-screen .instructions {
+  text-align: left;
+  font-size: 11px;
+  color: var(--text);
+  margin: 20px 0;
+  line-height: 1.8;
+}
+#start-screen .instructions div {
+  margin-bottom: 8px;
+  padding-left: 8px;
+}
+#start-screen .instructions span {
+  color: var(--green);
+}
+#start-screen button {
+  margin-top: 25px;
+  background: transparent;
+  border: 3px solid var(--green);
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  padding: 14px 30px;
+  cursor: pointer;
+  width: 100%;
+  text-shadow: 0 0 8px var(--green);
+}
+#start-screen button:active { 
+  background: var(--green); 
+  color:#000; 
+  text-shadow: none;
+}
+/* ── MODAL SOBRE ── */
+#about-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95);
+  display: flex; align-items:center; justify-content:center;
+  z-index: 601;
+}
+#about-screen {
+  background: var(--panel);
+  border: 3px solid var(--green);
+  box-shadow: 0 0 50px rgba(200,200,200,0.4);
+  padding: 40px 36px;
+  text-align: center;
+  min-width: 280px;
+  max-width: 400px;
+  width: 90vw;
+}
+#about-screen h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  color: var(--green);
+  text-shadow: 0 0 20px var(--green);
+  margin-bottom: 20px;
+  letter-spacing: 3px;
+}
+#about-screen .about-content {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--amber);
+  line-height: 2;
+  margin-bottom: 30px;
+}
+#about-screen .about-content strong {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+}
+#about-screen button {
+  background: transparent;
+  border: 2px solid var(--green);
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 100%;
+  text-shadow: 0 0 8px var(--green);
+}
+#about-screen button:active { 
+  background: var(--green); 
+  color:#000; 
+  text-shadow: none;
+}
+#about-overlay.hidden { display:none; }
+
+/* ── MODAL HIGH SCORES ── */
+#high-scores-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95);
+  display: flex; align-items:center; justify-content:center;
+  z-index: 601;
+}
+#high-scores-screen {
+  background: var(--panel);
+  border: 3px solid var(--amber);
+  box-shadow: 0 0 50px rgba(255,170,0,0.4);
+  padding: 40px 36px;
+  text-align: center;
+  min-width: 280px;
+  max-width: 400px;
+  width: 90vw;
+}
+#high-scores-screen h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  color: var(--amber);
+  text-shadow: 0 0 20px var(--amber);
+  margin-bottom: 30px;
+  letter-spacing: 3px;
+}
+.score-item {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 16px;
+  color: var(--text);
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 8px;
+  margin: 8px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.score-rank {
+  color: var(--amber);
+  font-weight: bold;
+  min-width: 30px;
+}
+.score-value {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+  font-weight: bold;
+}
+#high-scores-screen button {
+  background: transparent;
+  border: 2px solid var(--amber);
+  color: var(--amber);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 100%;
+  text-shadow: 0 0 8px var(--amber);
+  margin-top: 20px;
+}
+#high-scores-screen button:active { 
+  background: var(--amber); 
+  color:#000; 
+  text-shadow: none;
+}
+#high-scores-overlay.hidden { display:none; }
+#start-overlay.hidden { display:none; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="title">ATC ▸ SBVT</div>
+    <div class="meta">
+      <span id="ac-count">AC:0</span>
+      <span id="conflict-count" style="color:var(--red)">CONF:0</span>
+    </div>
+    <div class="menu-buttons">
+      <button onclick="restartGame()">REINICIAR</button>
+      <button onclick="goToMenu()">MENU</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="radar-wrap">
+      <canvas id="radar"></canvas>
+      <div id="redirect-panel" class="hidden"></div>
+    </div>
+
+    <div id="strips-bar">
+      <div class="strips-label">STRIPS</div>
+      <div id="strips"></div>
+    </div>
+
+    <div id="sidebar">
+      <div class="sb-section sb-score">
+        <div class="sb-title">SCORE</div>
+        <div id="score-display">0</div>
+        <div id="level-display">NÍV.1 INICIANTE</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="statusbar">
+    <span id="status-left"></span>
+    <span>5NM/1000ft</span>
+  </div>
+</div>
+
+<div id="modal-overlay" class="hidden">
+  <div id="modal">
+    <h2 id="modal-title">COLISÃO</h2>
+    <div class="score-final" id="modal-score">0</div>
+    <p id="modal-msg"></p>
+    <p id="modal-sep"></p>
+    <div id="name-entry" class="name-entry hidden">
+      <label for="player-name-input">REGISTRE O CONTROLADOR DE VOO</label>
+      <input
+        id="player-name-input"
+        type="text"
+        maxlength="16"
+        autocomplete="name"
+        autocapitalize="characters"
+        placeholder="CONTROLADOR"
+        onkeydown="handleNameInputKey(event)"
+      />
+      <div id="name-entry-tip">Pressione ENTER ou toque no botão para confirmar</div>
+    </div>
+    <button id="modal-action-btn" onclick="saveScoreAndRestart()">[ SALVAR E NOVO TURNO ]</button>
+  </div>
+</div>
+<div id="start-overlay">
+  <div id="start-screen">
+    <h1>ATC RADAR</h1>
+    <div class="subtitle">CONTROLE DE TRÁFEGO AÉREO</div>
+    <div class="instructions">
+      <div><span>▸</span> Clique nas aeronaves para selecionar</div>
+      <div><span>▸</span> Clique na etiqueta para alterar proa, nível e velocidade</div>
+      <div><span>▸</span> Arraste etiquetas para reposicionar</div>
+      <div><span>▸</span> Mantenha separação de 5NM e 1000ft</div>
+    </div>
+    <button id="btn-resume" onclick="resumeGame()" style="margin-bottom:10px; display:none">【 VOLTAR AO JOGO 】</button>
+    <button id="btn-start" onclick="startGame()" style="margin-bottom:10px">【 INICIAR JOGO 】</button>
+    <button onclick="openHighScores()" style="margin-bottom:10px">【 HIGH SCORES 】</button>
+    <button onclick="openAbout()">【 SOBRE 】</button>
+  </div>
+</div>
+<div id="about-overlay" class="hidden">
+  <div id="about-screen">
+    <h2>SOBRE</h2>
+    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.0 (beta)</div>
+    <div class="about-content">
+      <div><strong>Desenvolvimento</strong></div>
+      <div>ATC RADAR SBVT</div>
+      <div style="margin-top:20px"><strong>Gestor do Projeto</strong></div>
+      <div>Alexandre Campagner Carvalho</div>
+      <div>Bacharel em Sistemas de Informação</div>
+    </div>
+    <button onclick="closeAbout()">【 VOLTAR 】</button>
+  </div>
+</div>
+<div id="high-scores-overlay" class="hidden">
+  <div id="high-scores-screen">
+    <h2>TOP 5 SCORES</h2>
+    <div id="scores-list"></div>
+    <button onclick="closeHighScores()">【 VOLTAR 】</button>
+  </div>
+</div>
+<script>
+console.log('═══════════════════════════════════════');
+console.log('🎮 ATC RADAR SCRIPT LOADING...');
+console.log('═══════════════════════════════════════');
+
+// ══════════════════════════════════════════════
+//  ATC RADAR GAME ENGINE
+// ══════════════════════════════════════════════
+
+const canvas = document.getElementById('radar');
+const ctx    = canvas.getContext('2d');
+const wrap   = document.getElementById('radar-wrap');
+
+console.log('✓ Canvas:', canvas);
+console.log('✓ Context:', ctx);
+console.log('✓ Wrap:', wrap);
+
+// ── DADOS ICAO ────────────────────────────────
+const AIRPORTS = [
+  'SBGR','SBSP','SBBR','SBGL','SBCF','SBPA','SBCT','SBSV',
+  'SBKP','SBFL','SBMN','SBBE','SBRF','SBEG','SBLO','SBVT',
+  'SIVU','SIHC','SI4W','SINF','SJAE','SNGA','SNNL','SSST',
+];
+
+const CALLSIGNS = [
+  'AZU','GLO','TAM','HARPIA','PS','PR','MAR','PP','PT','FAB',
+];
+
+const REGISTRATIONS = ['PPAYB', 'FAB0001'];  // Matrículas específicas
+
+const TYPES = ['B738','A320','E190','B77W','A332','B763','E295','A21N','DH8D','AT72'];
+const HELI_TYPES = ['EC30','EC45'];
+
+// ── CONFIG ────────────────────────────────────
+const SEP_PX_H  = 3.5 * 14;   // 3.5NM em pixels (reduzido para detecção mais sensível)
+const SEP_FL    = 10;          // 1000 pés de separação vertical mínima
+const GAME_SPEED_MULT = 1.45;  // +45% velocidade geral (agressivo)
+const AC_GROWTH_FACTOR = 1.05; // fator de crescimento de aeronaves por nível
+const AUTO_CURVE_FACTOR = 0.75; // -25% no fator das curvas automáticas (mais curvas)
+const FL_MIN = 130;            // faixa de níveis muito reduzida (110 níveis de diferença)
+const FL_MAX = 220;
+let W, H, CX, CY, R;
+
+let sweepAngle  = 0;
+let score       = 0;
+let highScore   = 0;  // High score persistente
+let topScores   = [];  // Top 5 scores
+let level       = 1;
+let gameOver    = false;
+let selectedAC  = null;
+let conflicts   = new Set();
+let frame       = 0;
+let spawnTimer  = 0;
+let spawnInt    = 320;
+let aircraft    = [];
+let rafId       = null;
+let mapImage    = null;  // Imagem do mapa Vitória
+let draggingLabel = null;  // Aeronave cuja etiqueta está sendo arrastada
+let isDragging    = false;  // Flag de drag ativo
+let gameStarted   = false;  // Flag de jogo iniciado
+let gamePaused    = false;  // Flag de jogo pausado
+let pendingCollisionScore = null;
+
+// ── CARREGAR MAPA ──────────────────────────────
+const img = new Image();
+img.onload = () => { mapImage = img; };
+img.onerror = () => { console.warn('Mapa não encontrado, usando desenho default'); };
+img.src = './assets/vitoria-map.png';
+
+function sanitizePlayerName(name) {
+  const cleaned = String(name || '')
+    .toUpperCase()
+    .replace(/[^A-ZÀ-Ÿ0-9 ._-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 16);
+  return cleaned || 'CONTROLADOR';
+}
+
+function normalizeScoreEntry(entry) {
+  if (typeof entry === 'number' && Number.isFinite(entry)) {
+    return { name: 'CONTROLADOR', score: Math.max(0, Math.floor(entry)) };
+  }
+  if (entry && typeof entry === 'object') {
+    const parsedScore = Number(entry.score);
+    if (!Number.isFinite(parsedScore)) return null;
+    return {
+      name: sanitizePlayerName(entry.name),
+      score: Math.max(0, Math.floor(parsedScore))
+    };
+  }
+  return null;
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// ── HIGH SCORE ────────────────────────────────
+function loadHighScore() {
+  try {
+    const saved = localStorage.getItem('atcRadarTopScores');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      topScores = Array.isArray(parsed)
+        ? parsed.map(normalizeScoreEntry).filter(Boolean)
+        : [];
+      topScores.sort((a, b) => b.score - a.score);
+      topScores = topScores.slice(0, 5);
+    } else {
+      topScores = [];
+    }
+    highScore = topScores.length > 0 ? topScores[0].score : 0;
+    console.log('✓ High scores loaded:', topScores);
+  } catch(e) {
+    console.warn('⚠️ localStorage not available:', e.message);
+    topScores = [];
+    highScore = 0;
+  }
+}
+
+function saveHighScore() {
+  try {
+    localStorage.setItem('atcRadarTopScores', JSON.stringify(topScores));
+    updateScoreUI();
+    console.log('✓ High scores saved:', topScores);
+  } catch(e) {
+    console.warn('⚠️ Could not save high scores:', e.message);
+  }
+}
+
+function addScoreToTop5(playerName, newScore) {
+  topScores.push({
+    name: sanitizePlayerName(playerName),
+    score: Math.max(0, Math.floor(newScore))
+  });
+  topScores.sort((a, b) => b.score - a.score);
+  topScores = topScores.slice(0, 5);
+  highScore = topScores[0].score;
+  saveHighScore();
+}
+
+function handleNameInputKey(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    saveScoreAndRestart();
+  }
+}
+
+function openNameEntryModal() {
+  const nameEntry = document.getElementById('name-entry');
+  const input = document.getElementById('player-name-input');
+  const actionButton = document.getElementById('modal-action-btn');
+  const shouldAskName = pendingCollisionScore > 0;
+
+  if (shouldAskName) {
+    nameEntry.classList.remove('hidden');
+    actionButton.textContent = '[ SALVAR E NOVO TURNO ]';
+    input.value = '';
+    setTimeout(() => {
+      input.focus();
+      input.select();
+    }, 50);
+  } else {
+    nameEntry.classList.add('hidden');
+    actionButton.textContent = '[ NOVO TURNO ]';
+  }
+}
+
+function saveScoreAndRestart() {
+  if (pendingCollisionScore > 0) {
+    const playerName = document.getElementById('player-name-input').value;
+    addScoreToTop5(playerName, pendingCollisionScore);
+  }
+  pendingCollisionScore = null;
+  restartGame();
+}
+
+// loadHighScore();
+
+// ── HELPERS ───────────────────────────────────
+const rnd    = (a,b) => Math.random()*(b-a)+a;
+const rndInt = (a,b) => Math.floor(rnd(a,b+1));
+const pick   = a => a[Math.floor(Math.random()*a.length)];
+const dist2  = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
+
+function randomLetters(length) {
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  return result;
+}
+
+function uniqCallsign() {
+  const used = new Set(aircraft.map(a=>a.callsign));
+  let cs;
+  let attempts = 0;
+  do {
+    // 5% chance de FAB0001, 15% chance de PPAYB
+    const rand = Math.random();
+    if (rand < 0.05) {
+      cs = 'FAB0001';
+    } else if (rand < 0.20) {
+      cs = 'PPAYB';
+    } else {
+      const prefix = pick(CALLSIGNS);
+      // HARPIA usa 2 dígitos (01-99)
+      if (prefix === 'HARPIA') {
+        const num = rndInt(1, 99);
+        cs = prefix + String(num).padStart(2, '0');
+      }
+      // PS, PR, PP, PT usam 3 letras
+      else if (['PS','PR','PP','PT'].includes(prefix)) {
+        cs = prefix + randomLetters(3);
+      }
+      // AZU, GLO, TAM, MAR, FAB usam 4 dígitos
+      else if (['AZU','GLO','TAM','MAR','FAB'].includes(prefix)) {
+        cs = prefix + String(rndInt(1, 9999)).padStart(4, '0');
+      } else {
+        cs = prefix + rndInt(100,999);
+      }
+    }
+    attempts++;
+  } while (used.has(cs) && attempts < 50);
+  return cs;
+}
+
+function randomDep(dest) {
+  let d;
+  do { d = pick(AIRPORTS); } while (d === dest);
+  return d;
+}
+
+// ── SPAWN ─────────────────────────────────────
+function spawnAC() {
+  // Spawn nas bordas retangulares da tela
+  const edge = rndInt(0, 4); // 0=top, 1=right, 2=bottom, 3=left
+  let ex, ey, hdg;
+  const margin = 20;
+  
+  if (edge === 0) { // Top
+    ex = rnd(margin, W - margin);
+    ey = margin;
+    hdg = Math.PI/2 + rnd(-0.5, 0.5); // Apontando para baixo
+  } else if (edge === 1) { // Right
+    ex = W - margin;
+    ey = rnd(margin, H - margin);
+    hdg = Math.PI + rnd(-0.5, 0.5); // Apontando para esquerda
+  } else if (edge === 2) { // Bottom
+    ex = rnd(margin, W - margin);
+    ey = H - margin;
+    hdg = -Math.PI/2 + rnd(-0.5, 0.5); // Apontando para cima
+  } else { // Left
+    ex = margin;
+    ey = rnd(margin, H - margin);
+    hdg = rnd(-0.5, 0.5); // Apontando para direita
+  }
+  
+  const dest = pick(AIRPORTS);
+  const callsign = uniqCallsign();
+  const isHarpia = callsign.startsWith('HARPIA');
+  const gsMin = isHarpia ? 30 : 110;
+  const gsMax = isHarpia ? 160 : 480;
+  const gs = rndInt(gsMin, gsMax);
+  // Velocidade proporcional ao GS: fator de conversão KT -> pixels/frame
+  // Aumenta conforme nível, com boost global de velocidade
+  const spd = gs * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
+  const aircraftType = isHarpia ? pick(HELI_TYPES) : pick(TYPES);
+
+  const newAircraft = {
+    id:       Symbol(),
+    callsign: callsign,
+    type:     aircraftType,
+    dep:      randomDep(dest),
+    dest,
+    x: ex, y: ey,
+    hdg, targetHdg: hdg,
+    speed: spd, gs,
+    fl:       rndInt(FL_MIN / 10, FL_MAX / 10) * 10,
+    sweepBright: 0,
+    conflict: false,
+    age:      0,
+    separated:false,
+    labelAngle: 0,
+    labelDistance: 60,
+    nextTurnFrame: rndInt(200, 600),
+    nextFlChangeFrame: rndInt(300, 800),
+  };
+  
+  aircraft.push(newAircraft);
+}
+
+// ── RESIZE ────────────────────────────────────
+function resize() {
+  console.log('📐 resize() called');
+  if (!wrap || !canvas) {
+    console.error('❌ wrap or canvas not found!');
+    return;
+  }
+  const rect = wrap.getBoundingClientRect();
+  canvas.width = W = rect.width;
+  canvas.height = H = rect.height;
+  CX = W/2;
+  CY = H/2;
+  R = Math.min(W, H) / 2 - 20; // Raio de referência para escala
+  console.log('✓ Canvas resized:', W, 'x', H);
+}
+
+// ── UPDATE ────────────────────────────────────
+function update() {
+  if (gameOver) return;
+  frame++;
+  sweepAngle = (sweepAngle + 0.002) % (Math.PI*2);
+  spawnTimer++;
+
+  const maxAC = Math.min(Math.round((2 + level) * Math.pow(AC_GROWTH_FACTOR, level - 1)), 16);
+  if (spawnTimer >= spawnInt && aircraft.length < maxAC) {
+    spawnAC();
+    spawnTimer = 0;
+    spawnInt = Math.max(100, 320 - level*18);
+  }
+
+  // Move
+  aircraft.forEach(ac => {
+    ac.age++;
+    
+    // Curvas aleatórias em níveis mais difíceis
+    if (level >= 3 && ac.age >= ac.nextTurnFrame) {
+      // Frequência de curvas aumenta com o nível
+      const curveChance = Math.min(0.6 * AUTO_CURVE_FACTOR, (0.1 + level * 0.05) * AUTO_CURVE_FACTOR);
+      if (Math.random() < curveChance) {
+        // Gera uma curva aleatória: -90° a +90°
+        const curveAmount = rnd(-Math.PI/2, Math.PI/2);
+        ac.targetHdg += curveAmount;
+      }
+      // Próxima curva em 200-600 frames
+      ac.nextTurnFrame = ac.age + rndInt(200, 600 - level*30);
+    }
+    
+    // Mudanças de nível em níveis muito difíceis
+    if (level >= 5 && ac.age >= ac.nextFlChangeFrame) {
+      // Frequência de mudanças aumenta com o nível
+      const flChangeChance = Math.min(0.5, 0.05 + (level - 5) * 0.08);
+      if (Math.random() < flChangeChance) {
+        // Muda para um nível aleatório diferente (±2 a ±4 níveis)
+        const flChange = (rndInt(-4, 4) + (rndInt(0, 1) ? 1 : -1)) * 10;
+        ac.fl = Math.max(FL_MIN, Math.min(FL_MAX, ac.fl + flChange));
+      }
+      // Próxima mudança de FL em 300-800 frames
+      ac.nextFlChangeFrame = ac.age + rndInt(300, 800 - level*40);
+    }
+    
+    // suaviza heading
+    let diff = ac.targetHdg - ac.hdg;
+    while (diff >  Math.PI) diff -= Math.PI*2;
+    while (diff < -Math.PI) diff += Math.PI*2;
+    ac.hdg += diff * (0.032 * AUTO_CURVE_FACTOR);
+
+    // Movimento
+    ac.x += Math.cos(ac.hdg)*ac.speed;
+    ac.y += Math.sin(ac.hdg)*ac.speed;
+
+    // sweep glow
+    const aAngle = Math.atan2(ac.y-CY, ac.x-CX);
+    const ad = ((sweepAngle - aAngle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
+    if (ad < 0.18) ac.sweepBright = 1.0;
+    else ac.sweepBright = Math.max(0, ac.sweepBright - 0.009);
+  });
+
+  // Remove saídas
+  aircraft = aircraft.filter(ac => {
+    // Remove aeronaves que saem da tela (com margem)
+    const margin = 50;
+    if ((ac.x < -margin || ac.x > W+margin || ac.y < -margin || ac.y > H+margin) && ac.age>80) {
+      if (!ac.separated) score = Math.max(0,score-10);
+      return false;
+    }
+    return true;
+  });
+
+  // Conflitos
+  conflicts.clear();
+  for (let i=0; i<aircraft.length; i++) {
+    for (let j=i+1; j<aircraft.length; j++) {
+      const a=aircraft[i], b=aircraft[j];
+      const d=dist2(a,b);
+      const dfl=Math.abs(a.fl-b.fl);
+      // Colisão: aeronaves muito próximas e pouca separação vertical
+      if (d < 20 && dfl < SEP_FL) {
+        // COLISÃO
+        triggerGameOver(a,b); return;
+      } else if (d < 50 && dfl < SEP_FL*1.5) {
+        conflicts.add(a.id); conflicts.add(b.id);
+      }
+    }
+  }
+  aircraft.forEach(ac => ac.conflict = conflicts.has(ac.id));
+
+  // Score passivo
+  if (frame%60===0 && aircraft.length>1) {
+    score += aircraft.length * 2;
+    level  = Math.floor(score/500)+1;
+    updateScoreUI();
+  }
+
+  updateCounters();
+}
+
+// ── DRAW ──────────────────────────────────────
+function draw() {
+  ctx.clearRect(0,0,W,H);
+
+  // BG tela cheia cinza
+  ctx.fillStyle='#7a7a7a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid de distância retangular
+  ctx.strokeStyle='rgba(0,0,0,0.2)';
+  ctx.lineWidth=1;
+  // Linhas verticais
+  const gridSpacingX = W / 8;
+  for (let i = 1; i < 8; i++) {
+    ctx.beginPath();
+    ctx.moveTo(i * gridSpacingX, 0);
+    ctx.lineTo(i * gridSpacingX, H);
+    ctx.stroke();
+  }
+  // Linhas horizontais
+  const gridSpacingY = H / 8;
+  for (let i = 1; i < 8; i++) {
+    ctx.beginPath();
+    ctx.moveTo(0, i * gridSpacingY);
+    ctx.lineTo(W, i * gridSpacingY);
+    ctx.stroke();
+  }
+
+  // Marcações de distância nos cantos
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.font='8px Share Tech Mono';
+  const nmScale = Math.round(R / 14 / 2); // escala aproximada
+  [1,2,3,4].forEach(n=>{
+    ctx.fillText((n * nmScale)+'NM', 10, n * H/4);
+  });
+
+  // Cruz central
+  ctx.strokeStyle='rgba(0,0,0,0.25)';
+  ctx.lineWidth=1.5;
+  ctx.beginPath();
+  ctx.moveTo(CX-12,CY);
+  ctx.lineTo(CX+12,CY);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(CX,CY-12);
+  ctx.lineTo(CX,CY+12);
+  ctx.stroke();
+
+  // Compass nos cantos
+  ctx.font='10px Share Tech Mono';
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  ctx.fillText('N', CX, 15);
+  ctx.fillText('S', CX, H-15);
+  ctx.fillText('E', W-15, CY);
+  ctx.fillText('W', 15, CY);
+  ctx.textAlign='left';
+  ctx.textBaseline='alphabetic';
+
+  // Aeronaves
+  aircraft.forEach(drawAC);
+
+  // Relógio UTC no canto inferior esquerdo
+  const now = new Date();
+  const utcTime = `${String(now.getUTCHours()).padStart(2,'0')}:${String(now.getUTCMinutes()).padStart(2,'0')}:${String(now.getUTCSeconds()).padStart(2,'0')} UTC`;
+  
+  ctx.save();
+  // Fundo semi-transparente
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(10, H - 35, 110, 25);
+  
+  // Borda
+  ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(10, H - 35, 110, 25);
+  
+  // Texto UTC
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '14px Share Tech Mono';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(utcTime, 65, H - 22.5);
+  ctx.restore();
+}
+
+function drawVitoriaMap() {
+  // Desenho simplificado do videomapa ARV Vitória ES
+  // Linha de costa
+  ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(CX-R*0.6, CY-R*0.4);
+  ctx.lineTo(CX-R*0.5, CY-R*0.5);
+  ctx.lineTo(CX+R*0.1, CY-R*0.6);
+  ctx.lineTo(CX+R*0.3, CY-R*0.4);
+  ctx.stroke();
+
+  // Ilhas
+  ctx.fillStyle='rgba(0,0,0,0.2)';
+  [CX-R*0.4, CX+R*0.2].forEach(x=>{
+    ctx.beginPath(); ctx.arc(x, CY-R*0.55, 8, 0, Math.PI*2); ctx.fill();
+  });
+
+  // Pistas indicativas
+  ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=0.8;
+  ctx.beginPath();
+  ctx.moveTo(CX-R*0.35, CY-R*0.25);
+  ctx.lineTo(CX+R*0.25, CY+R*0.35);
+  ctx.stroke();
+  ctx.font='7px Share Tech Mono';
+  ctx.fillStyle='rgba(0,0,0,0.25)';
+  ctx.fillText('RWY 20/02', CX+R*0.15, CY+R*0.4);
+  ctx.fillText('ARV VITÓRIA ES', CX-R*0.3, CY-R*0.7);
+}
+
+function drawAC(ac) {
+  const br   = 0.35 + ac.sweepBright*0.65;
+  const isSel = selectedAC && selectedAC.id===ac.id;
+  const isCon = ac.conflict;
+  const solid = isCon?'#ff4444': isSel?'#ffaa00':'#000000';
+
+  // Vetor velocidade
+  const vlen=36;
+  ctx.beginPath();
+  ctx.moveTo(ac.x,ac.y);
+  ctx.lineTo(ac.x+Math.cos(ac.hdg)*vlen, ac.y+Math.sin(ac.hdg)*vlen);
+  ctx.strokeStyle=isCon?'rgba(255,68,68,0.65)':'rgba(0,0,0,0.45)';
+  ctx.lineWidth=1; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
+
+  // Seta do vetor
+  const ax=ac.x+Math.cos(ac.hdg)*vlen, ay=ac.y+Math.sin(ac.hdg)*vlen;
+  ctx.beginPath();
+  ctx.moveTo(ax,ay);
+  ctx.lineTo(ax-Math.cos(ac.hdg-0.42)*6, ay-Math.sin(ac.hdg-0.42)*6);
+  ctx.lineTo(ax-Math.cos(ac.hdg+0.42)*6, ay-Math.sin(ac.hdg+0.42)*6);
+  ctx.closePath();
+  ctx.fillStyle=isCon?'rgba(255,68,68,0.65)':'rgba(0,0,0,0.45)';
+  ctx.fill();
+
+  // Pulso conflito
+  if (isCon) {
+    const pulse=0.5+0.5*Math.sin(frame*0.18);
+    ctx.beginPath(); ctx.arc(ac.x,ac.y,12+pulse*5,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,68,68,${0.2+pulse*0.25})`; ctx.lineWidth=1; ctx.stroke();
+  }
+
+  // Anel de seleção
+  if (isSel) {
+    ctx.beginPath(); ctx.arc(ac.x,ac.y,13,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,170,0,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+  }
+
+  // Símbolo: Cruz dentro de círculo
+  ctx.save();
+  ctx.translate(ac.x,ac.y);
+  
+  // Círculo externo
+  ctx.beginPath();
+  ctx.arc(0, 0, 7, 0, Math.PI*2);
+  ctx.strokeStyle = solid;
+  ctx.lineWidth = isSel ? 2 : 1.5;
+  ctx.stroke();
+  
+  // Cruz interna
+  ctx.beginPath();
+  ctx.moveTo(-5, 0);
+  ctx.lineTo(5, 0);
+  ctx.moveTo(0, -5);
+  ctx.lineTo(0, 5);
+  ctx.strokeStyle = solid;
+  ctx.lineWidth = isSel ? 2 : 1.5;
+  ctx.stroke();
+  
+  ctx.restore();
+
+  // Etiqueta
+  drawLabel(ac, isCon, isSel, solid, br);
+}
+
+function getLabelRect(ac) {
+  const lw = 100;
+  const lh = 60;
+  const pad = 2;
+  const labelDist = ac.labelDistance || 60;
+  const rawX = ac.x + labelDist * Math.cos(ac.labelAngle);
+  const rawY = ac.y + labelDist * Math.sin(ac.labelAngle);
+  const maxX = Math.max(pad, W - lw - pad);
+  const maxY = Math.max(pad, H - lh - pad);
+  const lx = Math.max(pad, Math.min(maxX, rawX));
+  const ly = Math.max(pad, Math.min(maxY, rawY));
+  return { lx, ly, lw, lh };
+}
+
+function drawLabel(ac, isCon, isSel, color, br) {
+  const { lx, ly, lw, lh } = getLabelRect(ac);
+
+  ctx.fillStyle='rgba(90,90,90,0.35)';
+  ctx.strokeStyle=isCon?'rgba(255,68,68,0.7)': isSel?'rgba(255,170,0,0.7)':'rgba(50,50,50,0.4)';
+  ctx.lineWidth=1.5;
+  ctx.fillRect(lx,ly,lw,lh);
+  ctx.strokeRect(lx,ly,lw,lh);
+
+  // Linha de leader
+  ctx.beginPath(); ctx.moveTo(ac.x,ac.y); ctx.lineTo(lx+lw/2,ly+lh/2);
+  ctx.strokeStyle=isCon?'rgba(255,68,68,0.4)':'rgba(50,50,50,0.5)';
+  ctx.lineWidth=1; ctx.stroke();
+
+  ctx.font=`bold 14px "Orbitron",monospace`;
+  ctx.fillStyle=isCon?'#ff0000': isSel?'#ff8800':'#000000';
+  ctx.fillText(ac.callsign, lx+4, ly+16);
+
+  ctx.font=`12px "Share Tech Mono",monospace`;
+  ctx.fillStyle=isCon?'#ff0000': isSel?'#ff8800':'#000000';
+  ctx.fillText(`${ac.dep}→${ac.dest}`, lx+4, ly+31);
+  
+  // Velocidade em KT
+  ctx.fillText(`${ac.gs} KT`, lx+4, ly+42);
+  
+  // FL separado para realçar
+  ctx.font=`bold 13px "Share Tech Mono",monospace`;
+  ctx.fillStyle=isCon?'#ff0000': isSel?'#ff8800':'#ffcc00';
+  ctx.fillText(`FL${ac.fl}`, lx+4, ly+56);
+
+  ctx.font=`12px "Share Tech Mono",monospace`;
+  ctx.fillStyle='#000000';
+  ctx.fillText(ac.type, lx+50, ly+56);
+}
+
+// ── SIDEBAR ───────────────────────────────────
+function updateSidebar() {
+  const c=document.getElementById('strips');
+  c.innerHTML='';
+  aircraft.forEach(ac=>{
+    const d=document.createElement('div');
+    d.className='strip'+(ac.conflict?' conflict':'')+(selectedAC&&selectedAC.id===ac.id?' selected':'');
+    d.innerHTML=`
+      <div class="callsign">${ac.callsign} <span style="font-size:8px;opacity:.55">${ac.type}</span></div>
+      <div class="route">${ac.dep}→${ac.dest}</div>
+      <div class="data">GS${ac.gs} FL${String(ac.fl).padStart(3,'0')}</div>`;
+    d.addEventListener('click',()=>selectAC(ac));
+    c.appendChild(d);
+  });
+  document.getElementById('ac-count').textContent=`AC:${aircraft.length}`;
+}
+
+function updateCounters() {
+  const n=conflicts.size;
+  document.getElementById('conflict-count').textContent=`CONF:${n>0?Math.ceil(n/2):0}`;
+  document.getElementById('status-left').innerHTML=n>0
+    ?`<span class="alert">⚠ CONFLITO — SEPARE JÁ</span>`
+    :``;
+}
+
+function updateScoreUI() {
+  document.getElementById('score-display').textContent=score;
+  const nms=['INICIANTE','LEVE','MÉDIO','PESADO','CAOS'];
+  document.getElementById('level-display').textContent=`NÍV.${level} ${nms[Math.min(level-1,4)]} | High Score: ${highScore}`;
+}
+
+// ── SELEÇÃO / REDIRECT ─────────────────────────
+function selectAC(ac) {
+  if (selectedAC && selectedAC.id===ac.id) { selectedAC=null; hidePanel(); return; }
+  selectedAC=ac;
+  showPanel(ac);
+}
+
+function showPanel(ac) {
+  const panel=document.getElementById('redirect-panel');
+  const cr=canvas.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+  const ox=cr.left-wr.left, oy=cr.top-wr.top;
+  let px=ox+ac.x+16, py=oy+ac.y-16;
+  if (px+165>wr.width)  px=ox+ac.x-175;
+  if (py+340>wr.height) py=oy+ac.y-345;
+  py=Math.max(8,py); px=Math.max(4,px);
+  panel.style.left=px+'px'; panel.style.top=py+'px';
+  panel.classList.remove('hidden');
+
+  const deg=Math.round(((ac.hdg*180/Math.PI)+90+360)%360);
+  const opts=[
+    [`◀ ESQUERDA 30°`,          ac.hdg-Math.PI/6],
+    [`▶ DIREITA 30°`,           ac.hdg+Math.PI/6],
+    [`↺ REVERSO 180°`,          ac.hdg+Math.PI],
+  ];
+  const flUp=Math.min(ac.fl+10, FL_MAX);
+  const flDown=Math.max(ac.fl-10, FL_MIN);
+  const flOpts=[
+    [`⬆ SUBIR FL${String(flUp).padStart(3,'0')}`, flUp],
+    [`⬇ DESCER FL${String(flDown).padStart(3,'0')}`, flDown],
+  ];
+  const isHarpia = ac.callsign.startsWith('HARPIA');
+  const gsMin = isHarpia ? 30 : 110;
+  const gsMax = isHarpia ? 160 : 480;
+  const gsUp=Math.min(ac.gs+50, gsMax);
+  const gsDown=Math.max(ac.gs-50, gsMin);
+  const gsOpts=[
+    [`➕ ACELERAR ${gsUp}KT`, gsUp],
+    [`➖ REDUZIR ${gsDown}KT`, gsDown],
+  ];
+
+  panel.innerHTML=`<div class="rp-title">▸ ${ac.callsign}</div>`
+    +opts.map(([l,h])=>`<button class="rp-btn" onclick="doRedirect(${h})">${l}</button>`).join('')
+    +`<hr style="border:none;border-top:1px solid rgba(100,100,100,0.3);margin:3px 0;">`
+    +flOpts.map(([l,fl])=>`<button class="rp-btn" onclick="doChangeLevel(${fl})">${l}</button>`).join('')
+    +`<hr style="border:none;border-top:1px solid rgba(100,100,100,0.3);margin:3px 0;">`
+    +gsOpts.map(([l,gs])=>`<button class="rp-btn" onclick="doChangeSpeed(${gs})">${l}</button>`).join('')
+    +`<button class="rp-cancel" onclick="hidePanel()">CANCELAR</button>`;
+}
+
+function hidePanel() {
+  selectedAC=null;
+  document.getElementById('redirect-panel').classList.add('hidden');
+}
+
+function doRedirect(hdg) {
+  if (!selectedAC) return;
+  selectedAC.targetHdg=hdg;
+  selectedAC.separated=true;
+  score+=15; updateScoreUI();
+  const cs=selectedAC.callsign;
+  hidePanel();
+  document.getElementById('status-left').textContent=`✓ ${cs} REDIRECIONADA`;
+}
+
+function doChangeLevel(fl) {
+  if (!selectedAC) return;
+  selectedAC.fl=fl;
+  selectedAC.separated=true;
+  score+=10; updateScoreUI();
+  const cs=selectedAC.callsign;
+  hidePanel();
+  document.getElementById('status-left').textContent=`✓ ${cs} FL${String(fl).padStart(3,'0')}`;
+}
+
+function doChangeSpeed(gs) {
+  if (!selectedAC) return;
+  selectedAC.gs=gs;
+  // Recalcula a velocidade em pixels/frame baseado no novo gs (+15% na velocidade geral)
+  selectedAC.speed = gs * 0.00039204 * GAME_SPEED_MULT;
+  selectedAC.separated=true;
+  score+=5; updateScoreUI();
+  const cs=selectedAC.callsign;
+  hidePanel();
+  document.getElementById('status-left').textContent=`✓ ${cs} ${gs}KT`;
+}
+
+// ── TOUCH / CLICK NO CANVAS ────────────────────
+function handleStart(clientX, clientY) {
+  const rect=canvas.getBoundingClientRect();
+  const mx=clientX-rect.left, my=clientY-rect.top;
+  
+  // Verifica clique na etiqueta para drag
+  for (let ac of aircraft) {
+    const { lx, ly, lw, lh } = getLabelRect(ac);
+    
+    if (mx >= lx && mx <= lx+lw && my >= ly && my <= ly+lh) {
+      draggingLabel = ac;
+      isDragging = true;
+      return;
+    }
+  }
+  
+  // Se não clicou na etiqueta, verifica clique na aeronave
+  let hit=null, minD=Infinity;
+  aircraft.forEach(ac=>{
+    const d=dist2(ac,{x:mx,y:my});
+    if (d<22&&d<minD){minD=d;hit=ac;}
+  });
+  if (hit) selectAC(hit);
+  else hidePanel();
+}
+
+function handleMove(clientX, clientY) {
+  if (!isDragging || !draggingLabel) return;
+  
+  const rect=canvas.getBoundingClientRect();
+  const mx=clientX-rect.left, my=clientY-rect.top;
+  
+  // Calcula o ângulo e distância da etiqueta baseado na posição do mouse
+  const dx = mx - draggingLabel.x;
+  const dy = my - draggingLabel.y;
+  const distance = Math.hypot(dx, dy);
+  
+  // Limita a distância entre 30 e 200 pixels
+  draggingLabel.labelDistance = Math.max(30, Math.min(200, distance));
+  draggingLabel.labelAngle = Math.atan2(dy, dx);
+}
+
+function handleEnd() {
+  isDragging = false;
+  draggingLabel = null;
+}
+
+// Mouse events
+canvas.addEventListener('mousedown', e=>handleStart(e.clientX,e.clientY));
+canvas.addEventListener('mousemove', e=>handleMove(e.clientX,e.clientY));
+canvas.addEventListener('mouseup', handleEnd);
+canvas.addEventListener('mouseleave', handleEnd);
+
+// Touch events
+canvas.addEventListener('touchstart', e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  handleStart(t.clientX,t.clientY);
+},{passive:false});
+
+canvas.addEventListener('touchmove', e=>{
+  e.preventDefault();
+  const t=e.touches[0];
+  handleMove(t.clientX,t.clientY);
+},{passive:false});
+
+canvas.addEventListener('touchend', e=>{
+  e.preventDefault();
+  handleEnd();
+},{passive:false});
+
+// ── GAME OVER ─────────────────────────────────
+function triggerGameOver(a,b) {
+  gameOver=true;
+  cancelAnimationFrame(rafId);
+  pendingCollisionScore = score;
+  
+  const ov=document.getElementById('modal-overlay');
+  ov.classList.remove('hidden');
+  document.getElementById('modal-title').textContent='💥 COLISÃO';
+  document.getElementById('modal-score').textContent=score;
+  document.getElementById('modal-msg').innerHTML=
+    `<strong style="color:var(--red)">${a.callsign}</strong> × <strong style="color:var(--red)">${b.callsign}</strong> — separação violada.`;
+  document.getElementById('modal-sep').textContent=
+    `${aircraft.length} aeronave(s) no setor. Score: ${score}`;
+  openNameEntryModal();
+}
+
+// ── RESTART ───────────────────────────────────
+function goToMenu() {
+  gamePaused = true;
+  cancelAnimationFrame(rafId);
+  document.getElementById('start-overlay').classList.remove('hidden');
+  document.getElementById('btn-resume').style.display = gameStarted ? 'block' : 'none';
+  document.getElementById('btn-start').style.display = gameStarted ? 'none' : 'block';
+  selectedAC = null;
+  hidePanel();
+}
+
+function resumeGame() {
+  if (!gameStarted) return;
+  gamePaused = false;
+  document.getElementById('start-overlay').classList.add('hidden');
+  loop();
+}
+
+function startGame() {
+  try {
+    console.log('🎮 startGame() called');
+    gameStarted = true;
+    gamePaused = false;
+    aircraft = [];
+    score = 0;
+    level = 1;
+    gameOver = false;
+    conflicts = new Set();
+    frame = 0;
+    console.log('✓ gameStarted set to true');
+    loadHighScore();
+    console.log('✓ loadHighScore() completed, highScore =', highScore);
+    document.getElementById('start-overlay').classList.add('hidden');
+    document.getElementById('btn-resume').style.display = 'none';
+    document.getElementById('btn-start').style.display = 'block';
+    console.log('✓ start-overlay hidden');
+    restartGame();
+    console.log('✓ restartGame() completed');
+  } catch(e) {
+    alert('ERRO em startGame: ' + e.message);
+    console.error('❌ startGame ERROR:', e.message, e.stack);
+  }
+}
+
+function openAbout() {
+  document.getElementById('about-overlay').classList.remove('hidden');
+}
+
+function closeAbout() {
+  document.getElementById('about-overlay').classList.add('hidden');
+}
+
+function openHighScores() {
+  updateHighScoresDisplay();
+  document.getElementById('high-scores-overlay').classList.remove('hidden');
+}
+
+function closeHighScores() {
+  document.getElementById('high-scores-overlay').classList.add('hidden');
+}
+
+function updateHighScoresDisplay() {
+  const list = document.getElementById('scores-list');
+  if (topScores.length === 0) {
+    list.innerHTML = '<div style="padding:20px; color:var(--dim)">Nenhum score registrado</div>';
+    return;
+  }
+  list.innerHTML = topScores.map((entry, idx) => 
+    `<div class="score-item"><span class="score-rank">#${idx + 1}</span><span style="flex:1; text-align:left; color:var(--text); margin:0 10px">${escapeHtml(entry.name)}</span><span class="score-value">${entry.score}</span></div>`
+  ).join('');
+}
+
+function restartGame() {
+  console.log('🔄 restartGame() called, gameStarted =', gameStarted);
+  aircraft=[]; score=0; level=1; gameOver=false; gamePaused=false;
+  pendingCollisionScore = null;
+  selectedAC=null; conflicts=new Set(); frame=0;
+  spawnTimer=0; spawnInt=320; sweepAngle=0;
+  isDragging=false; draggingLabel=null;
+  document.getElementById('modal-overlay').classList.add('hidden');
+  document.getElementById('name-entry').classList.add('hidden');
+  document.getElementById('player-name-input').value='';
+  document.getElementById('modal-action-btn').textContent='[ SALVAR E NOVO TURNO ]';
+  document.getElementById('start-overlay').classList.add('hidden');
+  hidePanel();
+  console.log('✓ hidePanel() completed');
+  updateScoreUI();
+  console.log('✓ updateScoreUI() completed');
+  if (gameStarted) {
+    console.log('✓ gameStarted is true, calling loop()...');
+    loop();
+  } else {
+    console.error('✗ gameStarted is false, loop() NOT called!');
+  }
+}
+
+// ── LOOP ──────────────────────────────────────
+function loop() {
+  console.log('🔁 loop() called, frame:', frame, 'gameOver:', gameOver);
+  try {
+    update();
+    console.log('  ✓ update() completed');
+  } catch(e) {
+    console.error('  ✗ update() failed:', e.message, e.stack);
+  }
+  try {
+    draw();
+    console.log('  ✓ draw() completed');
+  } catch(e) {
+    console.error('  ✗ draw() failed:', e.message, e.stack);
+  }
+  try {
+    updateSidebar();
+    console.log('  ✓ updateSidebar() completed');
+  } catch(e) {
+    console.error('  ✗ updateSidebar() failed:', e.message, e.stack);
+  }
+  if (!gameOver) {
+    console.log('  🔄 Scheduling next frame...');
+    rafId=requestAnimationFrame(loop);
+  } else {
+    console.log('  ⏸️ gameOver is true, stopping loop');
+  }
+}
+
+// ── INIT ──────────────────────────────────────
+window.addEventListener('resize',()=>{resize();});
+window.addEventListener('load',()=>{ 
+  console.log('🚀 Window loaded!');
+  resize(); 
+});
+window.doRedirect=doRedirect;
+window.doChangeLevel=doChangeLevel;
+window.hidePanel=hidePanel;
+window.restartGame=restartGame;
+window.startGame=startGame;
+window.goToMenu=goToMenu;
+</script>
+</body>
+</html>
