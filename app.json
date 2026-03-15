@@ -32,6 +32,17 @@
     ],
     "plugins": [
       "expo-asset"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "574257ed-40c1-4a28-a2e9-2c121e8ec6f1"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/574257ed-40c1-4a28-a2e9-2c121e8ec6f1"
+    }
   }
 }
