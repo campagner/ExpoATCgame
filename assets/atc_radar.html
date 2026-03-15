@@ -1515,66 +1515,96 @@ function pickConflictFL(excludeId = null) {
 }
 
 // ── SPAWN ─────────────────────────────────────
-function spawnAC() {
-  // Spawn nas bordas retangulares da tela
-  const edge = rndInt(0, 4); // 0=top, 1=right, 2=bottom, 3=left
-  let ex, ey, hdg;
-  const margin = 20;
-  
-  if (edge === 0) { // Top
-    ex = rnd(margin, W - margin);
-    ey = margin;
-    hdg = Math.PI/2 + rnd(-0.5, 0.5); // Apontando para baixo
-  } else if (edge === 1) { // Right
-    ex = W - margin;
-    ey = rnd(margin, H - margin);
-    hdg = Math.PI + rnd(-0.5, 0.5); // Apontando para esquerda
-  } else if (edge === 2) { // Bottom
-    ex = rnd(margin, W - margin);
-    ey = H - margin;
-    hdg = -Math.PI/2 + rnd(-0.5, 0.5); // Apontando para cima
-  } else { // Left
-    ex = margin;
-    ey = rnd(margin, H - margin);
-    hdg = rnd(-0.5, 0.5); // Apontando para direita
-  }
-  
-  const dest = pick(AIRPORTS);
-  const callsign = uniqCallsign();
-  const isHarpia = callsign.startsWith('HARPIA');
-  const gsMin = isHarpia ? 30 : 110;
-  const gsMax = isHarpia ? 160 : 480;
-  const gs = rndInt(gsMin, gsMax);
-  // Velocidade proporcional ao GS: fator de conversão KT -> pixels/frame
-  // Aumenta conforme nível, com boost global de velocidade
-  const spd = gs * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
-  const aircraftType = isHarpia ? pick(HELI_TYPES) : pick(TYPES);
-  const conflictFL = pickConflictFL();
-  const initialFL = (conflictFL !== null && Math.random() < SAME_FL_SPAWN_BIAS)
-    ? conflictFL
-    : randomFL();
+function isSpawnRouteSafe(spawnX, spawnY, heading, projectedSpeed) {
+  if (conditionedAreas.length === 0) return true;
 
-  const newAircraft = {
-    id:       Symbol(),
-    callsign: callsign,
-    type:     aircraftType,
-    dep:      randomDep(dest),
-    dest,
-    x: ex, y: ey,
-    hdg, targetHdg: hdg,
-    speed: spd, gs,
-    fl:       initialFL,
-    sweepBright: 0,
-    conflict: false,
-    age:      0,
-    separated:false,
-    labelAngle: 0,
-    labelDistance: 60,
-    nextTurnFrame: rndInt(200, 600),
-    nextFlChangeFrame: rndInt(300, 800),
-  };
-  
-  aircraft.push(newAircraft);
+  const lookaheadFrames = 180;
+  const sampleStep = 8;
+  const headingX = Math.cos(heading);
+  const headingY = Math.sin(heading);
+
+  for (let frameOffset = 0; frameOffset <= lookaheadFrames; frameOffset += sampleStep) {
+    const px = spawnX + headingX * projectedSpeed * frameOffset;
+    const py = spawnY + headingY * projectedSpeed * frameOffset;
+    const invadesArea = conditionedAreas.some(area => pointInPolygon(px, py, area.points));
+    if (invadesArea) return false;
+  }
+
+  return true;
+}
+
+function spawnAC() {
+  const margin = 20;
+  const maxSpawnAttempts = 48;
+  const worstCaseSpawnSpeed = 480 * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
+
+  for (let attempt = 0; attempt < maxSpawnAttempts; attempt++) {
+    // Spawn nas bordas retangulares da tela
+    const edge = rndInt(0, 3); // 0=top, 1=right, 2=bottom, 3=left
+    let ex;
+    let ey;
+    let hdg;
+
+    if (edge === 0) { // Top
+      ex = rnd(margin, W - margin);
+      ey = margin;
+      hdg = Math.PI/2 + rnd(-0.5, 0.5); // Apontando para baixo
+    } else if (edge === 1) { // Right
+      ex = W - margin;
+      ey = rnd(margin, H - margin);
+      hdg = Math.PI + rnd(-0.5, 0.5); // Apontando para esquerda
+    } else if (edge === 2) { // Bottom
+      ex = rnd(margin, W - margin);
+      ey = H - margin;
+      hdg = -Math.PI/2 + rnd(-0.5, 0.5); // Apontando para cima
+    } else { // Left
+      ex = margin;
+      ey = rnd(margin, H - margin);
+      hdg = rnd(-0.5, 0.5); // Apontando para direita
+    }
+
+    if (!isSpawnRouteSafe(ex, ey, hdg, worstCaseSpawnSpeed)) continue;
+
+    const dest = pick(AIRPORTS);
+    const callsign = uniqCallsign();
+    const isHarpia = callsign.startsWith('HARPIA');
+    const gsMin = isHarpia ? 30 : 110;
+    const gsMax = isHarpia ? 160 : 480;
+    const gs = rndInt(gsMin, gsMax);
+    // Velocidade proporcional ao GS: fator de conversão KT -> pixels/frame
+    // Aumenta conforme nível, com boost global de velocidade
+    const spd = gs * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
+    const aircraftType = isHarpia ? pick(HELI_TYPES) : pick(TYPES);
+    const conflictFL = pickConflictFL();
+    const initialFL = (conflictFL !== null && Math.random() < SAME_FL_SPAWN_BIAS)
+      ? conflictFL
+      : randomFL();
+
+    const newAircraft = {
+      id:       Symbol(),
+      callsign: callsign,
+      type:     aircraftType,
+      dep:      randomDep(dest),
+      dest,
+      x: ex, y: ey,
+      hdg, targetHdg: hdg,
+      speed: spd, gs,
+      fl:       initialFL,
+      sweepBright: 0,
+      conflict: false,
+      age:      0,
+      separated:false,
+      labelAngle: 0,
+      labelDistance: 60,
+      nextTurnFrame: rndInt(200, 600),
+      nextFlChangeFrame: rndInt(300, 800),
+    };
+
+    aircraft.push(newAircraft);
+    return true;
+  }
+
+  return false;
 }
 
 // ── RESIZE ────────────────────────────────────
@@ -1603,9 +1633,13 @@ function update() {
 
   const maxAC = Math.min(Math.round((2 + level) * Math.pow(AC_GROWTH_FACTOR, level - 1)), 16);
   if (spawnTimer >= spawnInt && aircraft.length < maxAC) {
-    spawnAC();
-    spawnTimer = 0;
-    spawnInt = Math.max(100, 320 - level*18);
+    const spawned = spawnAC();
+    if (spawned) {
+      spawnTimer = 0;
+      spawnInt = Math.max(100, 320 - level*18);
+    } else {
+      spawnTimer = Math.max(0, spawnInt - 24);
+    }
   }
 
   // Move
