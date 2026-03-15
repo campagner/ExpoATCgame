@@ -22,7 +22,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.campagner.atcradarsbvt",
-      "versionCode": 1
+      "versionCode": 8
     },
     "web": {
       "favicon": "./assets/favicon.png"
