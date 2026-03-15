@@ -26,6 +26,8 @@
 html, body {
   width: 100%; 
   height: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
   background: var(--bg);
@@ -55,7 +57,8 @@ body::before {
   display:flex; 
   flex-direction:column; 
   height:100vh; 
-  height: calc(100vh - env(safe-area-inset-bottom, 0px));
+  height:100dvh;
+  min-height:100vh;
   width:100vw; 
   overflow: hidden;
   margin: 0;
@@ -126,11 +129,12 @@ body::before {
 }
 
 /* ── MAIN ── */
-#main { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; }
+#main { display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0; position: relative; }
 
 #radar-wrap {
   position: relative;
   flex: 1;
+  height: 100%;
   display: flex;
   background: var(--bg);
   min-width: 0;
@@ -147,14 +151,19 @@ body::before {
 
 /* ── STRIPS BAR ── */
 #strips-bar {
-  height: 60px;
+  height: 52px;
   flex-shrink: 0;
   background: var(--panel);
   border-top: 1px solid var(--border);
   display: flex;
   flex-direction: row;
   overflow: hidden;
-  padding: 4px 8px;
+  padding: 3px 8px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 34px;
+  z-index: 20;
 }
 .strips-label {
   font-family: 'Orbitron', monospace;
@@ -170,7 +179,7 @@ body::before {
 
 /* ── SIDEBAR ── */
 #sidebar {
-  height: 40px;
+  height: 34px;
   flex-shrink: 0;
   background: var(--panel);
   border-top: 1px solid var(--border);
@@ -178,15 +187,40 @@ body::before {
   flex-direction: row;
   overflow: hidden;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
 }
 .sb-section { 
-  padding: 4px 8px; 
+  padding: 2px 8px; 
   border-bottom: 1px solid var(--border);
   min-width: 110px;
   flex-shrink: 0;
 }
 .sb-score {
   min-width: 70px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'title title'
+    'score level';
+  align-items: end;
+  column-gap: 8px;
+}
+.sb-score .sb-title {
+  grid-area: title;
+}
+.sb-score #score-display {
+  grid-area: score;
+}
+.sb-score #level-display {
+  grid-area: level;
+  justify-self: end;
+  text-align: right;
+  margin-top: 0;
 }
 .sb-title {
   font-family: 'Orbitron', monospace;
@@ -197,18 +231,22 @@ body::before {
 }
 #score-display {
   font-family: 'Orbitron', monospace;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--green);
   text-shadow: 0 0 10px var(--green);
   letter-spacing: 1px;
 }
-#level-display { font-size: 8px; color: var(--amber); margin-top: 1px; }
+#level-display {
+  font-size: 8px;
+  color: var(--amber);
+  margin-top: 1px;
+}
 
 #strips { flex:1; overflow-x:auto; overflow-y:hidden; display:flex; gap:3px; scrollbar-width:thin; scrollbar-color: var(--border) transparent; }
 
 .strip {
-  margin: 2px 0;
-  padding: 4px 6px;
+  margin: 1px 0;
+  padding: 3px 6px;
   border: 1px solid var(--border);
   border-top: 2px solid var(--green-dim);
   background: rgba(200,200,200,0.03);
@@ -303,6 +341,30 @@ body::before {
 }
 .rp-cancel:active { color: var(--red); }
 #redirect-panel.hidden { display:none; }
+
+#level-up-alert {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 130;
+  padding: 8px 14px;
+  border: 2px solid var(--amber);
+  background: rgba(15, 15, 15, 0.88);
+  color: var(--amber);
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px var(--amber);
+  box-shadow: 0 0 14px rgba(255,170,0,0.35);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+#level-up-alert.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 /* ── MODAL ── */
 #modal-overlay {
@@ -421,7 +483,8 @@ body::before {
   letter-spacing: 3px;
 }
 #start-screen .instructions {
-  text-align: left;
+  text-align: justify;
+  text-justify: inter-word;
   font-size: 11px;
   color: var(--text);
   margin: 20px 0;
@@ -534,6 +597,47 @@ body::before {
   margin-bottom: 30px;
   letter-spacing: 3px;
 }
+#scores-sync-status {
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 1px;
+  margin: -14px 0 18px;
+  min-height: 12px;
+}
+#scores-loading {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  padding: 28px 0 10px;
+}
+#scores-loading.visible { display: flex; }
+.scores-spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid var(--border);
+  border-top-color: var(--amber);
+  border-radius: 50%;
+  animation: spin-scores 0.75s linear infinite;
+}
+@keyframes spin-scores {
+  to { transform: rotate(360deg); }
+}
+#scores-sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--dim);
+  display: inline-block;
+  flex-shrink: 0;
+}
+#scores-sync-text {
+  color: var(--dim);
+}
 .score-item {
   font-family: 'Share Tech Mono', monospace;
   font-size: 16px;
@@ -554,6 +658,29 @@ body::before {
   color: var(--green);
   text-shadow: 0 0 8px var(--green);
   font-weight: bold;
+}
+.score-player {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  color: var(--text);
+  margin: 0 10px;
+  min-width: 0;
+}
+.score-player-icon {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 6px rgba(255,170,0,0.8);
+  flex-shrink: 0;
+}
+.score-player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 #high-scores-screen button {
   background: transparent;
@@ -596,6 +723,7 @@ body::before {
     <div id="radar-wrap">
       <canvas id="radar"></canvas>
       <div id="redirect-panel" class="hidden"></div>
+      <div id="level-up-alert"></div>
     </div>
 
     <div id="strips-bar">
@@ -645,12 +773,14 @@ body::before {
     <h1>ATC RADAR</h1>
     <div class="subtitle">CONTROLE DE TRÁFEGO AÉREO</div>
     <div class="instructions">
-      <div><span>▸</span> Clique nas aeronaves para selecionar</div>
-      <div><span>▸</span> Clique na etiqueta para alterar proa, nível e velocidade</div>
-      <div><span>▸</span> Arraste etiquetas para reposicionar</div>
-      <div><span>▸</span> Mantenha separação de 5NM e 1000ft</div>
+      <div><span>▸</span> Clique nas pistas ou nas strips para selecionar</div>
+      <div><span>▸</span> Altere proa, nível e velocidade</div>
+      <div><span>▸</span> Arraste as etiquetas para reposicionar</div>
+      <div><span>▸</span> Mantenha a separação lateral ou garanta FL diferente</div>
+      <div><span>▸</span> Evite ingresso em espaços aéreos condicionados, independente do FL</div>
     </div>
     <button id="btn-resume" onclick="resumeGame()" style="margin-bottom:10px; display:none">【 VOLTAR AO JOGO 】</button>
+    <button id="btn-restart" onclick="restartFromMenu()" style="margin-bottom:10px; display:none">【 REINICIAR 】</button>
     <button id="btn-start" onclick="startGame()" style="margin-bottom:10px">【 INICIAR JOGO 】</button>
     <button onclick="openHighScores()" style="margin-bottom:10px">【 HIGH SCORES 】</button>
     <button onclick="openAbout()">【 SOBRE 】</button>
@@ -665,14 +795,16 @@ body::before {
       <div>ATC RADAR SBVT</div>
       <div style="margin-top:20px"><strong>Gestor do Projeto</strong></div>
       <div>Alexandre Campagner Carvalho</div>
-      <div>Bacharel em Sistemas de Informação</div>
+      <div style="color:var(--dim); font-size:10px">Bacharel em Sistemas de Informação</div>
     </div>
     <button onclick="closeAbout()">【 VOLTAR 】</button>
   </div>
 </div>
 <div id="high-scores-overlay" class="hidden">
   <div id="high-scores-screen">
-    <h2>TOP 5 SCORES</h2>
+    <h2>TOP 10 SCORES</h2>
+    <div id="scores-sync-status"><span id="scores-sync-dot"></span><span id="scores-sync-text">MODO LOCAL</span></div>
+    <div id="scores-loading"><div class="scores-spinner"></div></div>
     <div id="scores-list"></div>
     <button onclick="closeHighScores()">【 VOLTAR 】</button>
   </div>
@@ -720,12 +852,16 @@ const FL_MIN = 130;            // faixa de níveis muito reduzida (110 níveis d
 const FL_MAX = 220;
 const SAME_FL_SPAWN_BIAS = 0.72; // probabilidade de nascer no mesmo FL de outra aeronave
 const SAME_FL_CHANGE_BIAS = 0.68; // probabilidade de mudança de FL para igualar outro tráfego
+const CONDITIONED_AREA_START_LEVEL = 2;
+const CONDITIONED_AREA_MAX_RADIUS = 54;
+const CONDITIONED_AREA_MIN_RADIUS = 26;
+const CONDITIONED_AREA_ALLOWED_SIDES = [4, 6, 8];
 let W, H, CX, CY, R;
 
 let sweepAngle  = 0;
 let score       = 0;
 let highScore   = 0;  // High score persistente
-let topScores   = [];  // Top 5 scores
+let topScores   = [];  // Top 10 scores
 let level       = 1;
 let gameOver    = false;
 let selectedAC  = null;
@@ -741,6 +877,9 @@ let isDragging    = false;  // Flag de drag ativo
 let gameStarted   = false;  // Flag de jogo iniciado
 let gamePaused    = false;  // Flag de jogo pausado
 let pendingCollisionScore = null;
+let conditionedAreas = [];
+let usedConditionedAreaCodes = new Set();
+let levelAlertTimer = null;
 
 // ── CARREGAR MAPA ──────────────────────────────
 const img = new Image();
@@ -782,17 +921,308 @@ function escapeHtml(text) {
     .replace(/'/g, '&#39;');
 }
 
+const SUPABASE_URL = '__SUPABASE_URL__';
+const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
+const LEADERBOARD_MODE = 'classic';
+const TOP_SCORES_LIMIT = 10;
+const SCORE_STORAGE_KEY = 'atcRadarTopScores';
+const PLAYER_ID_STORAGE_KEY = 'atcRadarPlayerId';
+const SCORE_QUEUE_STORAGE_KEY = 'atcRadarPendingScores';
+const QUEUE_RETRY_INTERVAL_MS = 30000;
+let queueFlushInFlight = false;
+let queueRetryTimer = null;
+
+function isCloudLeaderboardEnabled() {
+  return Boolean(
+    SUPABASE_URL &&
+    SUPABASE_ANON_KEY &&
+    SUPABASE_URL.startsWith('https://') &&
+    !SUPABASE_URL.includes('__SUPABASE_URL__') &&
+    !SUPABASE_ANON_KEY.includes('__SUPABASE_ANON_KEY__')
+  );
+}
+
+function buildSupabaseHeaders() {
+  const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_ANON_KEY,
+  };
+
+  const keyLooksLikeJwt = typeof SUPABASE_ANON_KEY === 'string' && SUPABASE_ANON_KEY.split('.').length === 3;
+  if (keyLooksLikeJwt) {
+    headers.Authorization = `Bearer ${SUPABASE_ANON_KEY}`;
+  }
+
+  return headers;
+}
+
+function generateFallbackUUID() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const rand = Math.random() * 16 | 0;
+    const value = c === 'x' ? rand : (rand & 0x3 | 0x8);
+    return value.toString(16);
+  });
+}
+
+function getOrCreatePlayerId() {
+  try {
+    const existing = localStorage.getItem(PLAYER_ID_STORAGE_KEY);
+    if (existing && existing.length >= 8 && existing.length <= 64) return existing;
+    const generated = (window.crypto && typeof window.crypto.randomUUID === 'function')
+      ? window.crypto.randomUUID()
+      : generateFallbackUUID();
+    localStorage.setItem(PLAYER_ID_STORAGE_KEY, generated);
+    return generated;
+  } catch (error) {
+    console.warn('⚠️ Could not persist player id:', error.message);
+    return generateFallbackUUID();
+  }
+}
+
+function clampScore(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.min(1000000000, Math.floor(parsed)));
+}
+
+function normalizeMode(value) {
+  const mode = String(value || LEADERBOARD_MODE).trim();
+  return mode ? mode.slice(0, 32) : LEADERBOARD_MODE;
+}
+
+function normalizeQueuedScoreEntry(entry) {
+  if (!entry || typeof entry !== 'object') return null;
+  const score = clampScore(entry.score);
+  return {
+    name: sanitizePlayerName(entry.name),
+    score,
+    mode: normalizeMode(entry.mode),
+    queuedAt: Number.isFinite(Number(entry.queuedAt)) ? Number(entry.queuedAt) : Date.now(),
+  };
+}
+
+function loadPendingScoresQueue() {
+  try {
+    const rawQueue = localStorage.getItem(SCORE_QUEUE_STORAGE_KEY);
+    if (!rawQueue) return [];
+    const parsedQueue = JSON.parse(rawQueue);
+    if (!Array.isArray(parsedQueue)) return [];
+    return parsedQueue.map(normalizeQueuedScoreEntry).filter(Boolean);
+  } catch (error) {
+    console.warn('⚠️ Could not load pending score queue:', error.message);
+    return [];
+  }
+}
+
+function savePendingScoresQueue(queue) {
+  try {
+    localStorage.setItem(SCORE_QUEUE_STORAGE_KEY, JSON.stringify(queue));
+  } catch (error) {
+    console.warn('⚠️ Could not save pending score queue:', error.message);
+  }
+}
+
+function enqueuePendingScore(playerName, score, mode = LEADERBOARD_MODE) {
+  const queue = loadPendingScoresQueue();
+  queue.push({
+    name: sanitizePlayerName(playerName),
+    score: clampScore(score),
+    mode: normalizeMode(mode),
+    queuedAt: Date.now(),
+  });
+  savePendingScoresQueue(queue);
+  console.log(`☁️ Score queued for retry. Pending: ${queue.length}`);
+  setScoresSyncStatus('offline', queue.length);
+}
+
+function setScoresSyncStatus(state = 'local', pendingCount = null) {
+  const statusEl = document.getElementById('scores-sync-status');
+  const dotEl = document.getElementById('scores-sync-dot');
+  const textEl = document.getElementById('scores-sync-text');
+  if (!statusEl || !dotEl || !textEl) return;
+
+  function applyStatusVisual(label, color) {
+    textEl.textContent = label;
+    textEl.style.color = color;
+    dotEl.style.backgroundColor = color;
+  }
+
+  if (!isCloudLeaderboardEnabled()) {
+    applyStatusVisual('MODO LOCAL', 'var(--dim)');
+    return;
+  }
+
+  const pending = pendingCount === null ? loadPendingScoresQueue().length : pendingCount;
+
+  if (state === 'syncing') {
+    applyStatusVisual('SINCRONIZANDO...', 'var(--amber)');
+    return;
+  }
+
+  if (state === 'online') {
+    applyStatusVisual(
+      pending > 0 ? `ONLINE • ${pending} PENDENTE(S)` : 'ONLINE',
+      pending > 0 ? 'var(--amber)' : 'var(--green)'
+    );
+    return;
+  }
+
+  applyStatusVisual(pending > 0 ? `OFFLINE • ${pending} PENDENTE(S)` : 'OFFLINE', 'var(--red)');
+}
+
+async function callSupabaseRpc(rpcName, payload, timeoutMs = 4500) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${rpcName}`, {
+      method: 'POST',
+      headers: buildSupabaseHeaders(),
+      body: JSON.stringify(payload || {}),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const responseText = await response.text();
+      throw new Error(`HTTP ${response.status} ${responseText}`);
+    }
+
+    return await response.json();
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+async function postScoreToCloud(playerName, newScore, mode = LEADERBOARD_MODE) {
+  if (!isCloudLeaderboardEnabled()) return false;
+  try {
+    await callSupabaseRpc('submit_score', {
+      p_player_id: getOrCreatePlayerId(),
+      p_player_name: sanitizePlayerName(playerName),
+      p_mode: normalizeMode(mode),
+      p_score: clampScore(newScore),
+    }, 5000);
+    return true;
+  } catch (error) {
+    console.warn('⚠️ Cloud score submit failed:', error.message);
+    return false;
+  }
+}
+
+async function submitScoreToCloud(playerName, newScore, mode = LEADERBOARD_MODE) {
+  if (!isCloudLeaderboardEnabled()) {
+    setScoresSyncStatus('local');
+    return false;
+  }
+  const sent = await postScoreToCloud(playerName, newScore, mode);
+  if (!sent) {
+    enqueuePendingScore(playerName, newScore, mode);
+    setScoresSyncStatus('offline');
+    return false;
+  }
+  setScoresSyncStatus('online');
+  return true;
+}
+
+async function flushPendingScoresQueue() {
+  if (!isCloudLeaderboardEnabled() || queueFlushInFlight) return false;
+  const queue = loadPendingScoresQueue();
+  if (queue.length === 0) {
+    setScoresSyncStatus('online', 0);
+    return true;
+  }
+
+  setScoresSyncStatus('syncing', queue.length);
+  queueFlushInFlight = true;
+  try {
+    const remaining = [];
+    for (const queued of queue) {
+      const sent = await postScoreToCloud(queued.name, queued.score, queued.mode);
+      if (!sent) remaining.push(queued);
+    }
+    savePendingScoresQueue(remaining);
+    if (remaining.length === 0) {
+      console.log('☁️ Pending score queue flushed successfully.');
+      setScoresSyncStatus('online', 0);
+    } else {
+      console.warn(`⚠️ Pending queue still has ${remaining.length} item(s).`);
+      setScoresSyncStatus('offline', remaining.length);
+    }
+    return remaining.length === 0;
+  } finally {
+    queueFlushInFlight = false;
+  }
+}
+
+function setupPendingQueueAutoRetry() {
+  if (queueRetryTimer !== null) return;
+
+  window.addEventListener('online', () => {
+    flushPendingScoresQueue();
+    refreshTopScoresFromCloud();
+  });
+
+  queueRetryTimer = window.setInterval(() => {
+    flushPendingScoresQueue();
+  }, QUEUE_RETRY_INTERVAL_MS);
+}
+
+async function refreshTopScoresFromCloud() {
+  if (!isCloudLeaderboardEnabled()) {
+    setScoresSyncStatus('local');
+    return false;
+  }
+  try {
+    const localSnapshot = Array.isArray(topScores) ? topScores.slice() : [];
+    setScoresSyncStatus('syncing');
+    await flushPendingScoresQueue();
+    const leaderboard = await callSupabaseRpc('get_leaderboard', {
+      p_mode: LEADERBOARD_MODE,
+      p_limit: TOP_SCORES_LIMIT,
+    });
+
+    if (!Array.isArray(leaderboard)) return false;
+
+    const cloudScores = leaderboard
+      .map(row => normalizeScoreEntry({ name: row.player_name, score: row.score }))
+      .filter(Boolean);
+
+    const mergedScores = [...localSnapshot, ...cloudScores]
+      .filter(Boolean)
+      .reduce((acc, entry) => {
+        const key = `${entry.name}::${entry.score}`;
+        if (!acc.seen.has(key)) {
+          acc.seen.add(key);
+          acc.items.push(entry);
+        }
+        return acc;
+      }, { seen: new Set(), items: [] })
+      .items;
+
+    mergedScores.sort((a, b) => b.score - a.score);
+    topScores = mergedScores.slice(0, TOP_SCORES_LIMIT);
+
+    highScore = topScores.length > 0 ? topScores[0].score : 0;
+    saveHighScore();
+    setScoresSyncStatus('online');
+    return true;
+  } catch (error) {
+    console.warn('⚠️ Cloud leaderboard refresh failed:', error.message);
+    setScoresSyncStatus('offline');
+    return false;
+  }
+}
+
 // ── HIGH SCORE ────────────────────────────────
 function loadHighScore() {
   try {
-    const saved = localStorage.getItem('atcRadarTopScores');
+    const saved = localStorage.getItem(SCORE_STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
       topScores = Array.isArray(parsed)
         ? parsed.map(normalizeScoreEntry).filter(Boolean)
         : [];
       topScores.sort((a, b) => b.score - a.score);
-      topScores = topScores.slice(0, 5);
+      topScores = topScores.slice(0, TOP_SCORES_LIMIT);
     } else {
       topScores = [];
     }
@@ -807,7 +1237,7 @@ function loadHighScore() {
 
 function saveHighScore() {
   try {
-    localStorage.setItem('atcRadarTopScores', JSON.stringify(topScores));
+    localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(topScores));
     updateScoreUI();
     console.log('✓ High scores saved:', topScores);
   } catch(e) {
@@ -815,13 +1245,13 @@ function saveHighScore() {
   }
 }
 
-function addScoreToTop5(playerName, newScore) {
+function addScoreToTop10(playerName, newScore) {
   topScores.push({
     name: sanitizePlayerName(playerName),
     score: Math.max(0, Math.floor(newScore))
   });
   topScores.sort((a, b) => b.score - a.score);
-  topScores = topScores.slice(0, 5);
+  topScores = topScores.slice(0, TOP_SCORES_LIMIT);
   highScore = topScores[0].score;
   saveHighScore();
 }
@@ -854,12 +1284,18 @@ function openNameEntryModal() {
 }
 
 function saveScoreAndRestart() {
+  let shouldOpenHighScores = false;
   if (pendingCollisionScore > 0) {
     const playerName = document.getElementById('player-name-input').value;
-    addScoreToTop5(playerName, pendingCollisionScore);
+    addScoreToTop10(playerName, pendingCollisionScore);
+    submitScoreToCloud(playerName, pendingCollisionScore);
+    shouldOpenHighScores = true;
   }
   pendingCollisionScore = null;
   restartGame();
+  if (shouldOpenHighScores) {
+    openHighScores();
+  }
 }
 
 // loadHighScore();
@@ -869,6 +1305,153 @@ const rnd    = (a,b) => Math.random()*(b-a)+a;
 const rndInt = (a,b) => Math.floor(rnd(a,b+1));
 const pick   = a => a[Math.floor(Math.random()*a.length)];
 const dist2  = (a,b) => Math.hypot(a.x-b.x,a.y-b.y);
+
+function polygonCentroid(points) {
+  let signedArea = 0;
+  let centroidX = 0;
+  let centroidY = 0;
+  for (let i = 0; i < points.length; i++) {
+    const current = points[i];
+    const next = points[(i + 1) % points.length];
+    const cross = current.x * next.y - next.x * current.y;
+    signedArea += cross;
+    centroidX += (current.x + next.x) * cross;
+    centroidY += (current.y + next.y) * cross;
+  }
+  if (Math.abs(signedArea) < 1e-6) {
+    const avgX = points.reduce((sum, point) => sum + point.x, 0) / points.length;
+    const avgY = points.reduce((sum, point) => sum + point.y, 0) / points.length;
+    return { x: avgX, y: avgY };
+  }
+  const factor = 1 / (3 * signedArea);
+  return {
+    x: centroidX * factor,
+    y: centroidY * factor,
+  };
+}
+
+function pointInPolygon(x, y, points) {
+  let inside = false;
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    const xi = points[i].x;
+    const yi = points[i].y;
+    const xj = points[j].x;
+    const yj = points[j].y;
+    const intersects = ((yi > y) !== (yj > y))
+      && (x < ((xj - xi) * (y - yi)) / ((yj - yi) || 1e-6) + xi);
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
+function generateRandomConditionedAreaLabel() {
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const code = rndInt(1, 999);
+    const label = `SBR${String(code).padStart(3, '0')}`;
+    if (!usedConditionedAreaCodes.has(label)) {
+      usedConditionedAreaCodes.add(label);
+      return label;
+    }
+  }
+
+  const startCode = rndInt(1, 999);
+  for (let offset = 0; offset < 999; offset++) {
+    const code = ((startCode + offset - 1) % 999) + 1;
+    const label = `SBR${String(code).padStart(3, '0')}`;
+    if (!usedConditionedAreaCodes.has(label)) {
+      usedConditionedAreaCodes.add(label);
+      return label;
+    }
+  }
+
+  return `SBR${String(rndInt(1, 999)).padStart(3, '0')}`;
+}
+
+function createConditionedArea() {
+  const label = generateRandomConditionedAreaLabel();
+  const pointCount = pick(CONDITIONED_AREA_ALLOWED_SIDES);
+  const padding = 90;
+  for (let attempt = 0; attempt < 40; attempt++) {
+    const centerX = rnd(padding, Math.max(padding, W - padding));
+    const centerY = rnd(padding, Math.max(padding, H - padding));
+    const baseRadius = rnd(CONDITIONED_AREA_MIN_RADIUS, CONDITIONED_AREA_MAX_RADIUS);
+    const points = [];
+    const startAngle = rnd(0, Math.PI * 2);
+    const angleWeights = Array.from({ length: pointCount }, () => rnd(0.68, 1.42));
+    const totalWeight = angleWeights.reduce((sum, weight) => sum + weight, 0);
+    let angleCursor = startAngle;
+    for (let index = 0; index < pointCount; index++) {
+      const angle = angleCursor;
+      const radius = baseRadius * rnd(0.52, 1.45);
+      const px = centerX + Math.cos(angle) * radius;
+      const py = centerY + Math.sin(angle) * radius;
+      points.push({ x: px, y: py });
+      angleCursor += (angleWeights[index] / totalWeight) * Math.PI * 2;
+    }
+    const isInsideBounds = points.every(point => point.x >= 25 && point.x <= W - 25 && point.y >= 25 && point.y <= H - 25);
+    if (!isInsideBounds) continue;
+
+    const tooCloseToAnotherArea = conditionedAreas.some(area => dist2(area.center, { x: centerX, y: centerY }) < 120);
+    if (tooCloseToAnotherArea) continue;
+
+    return {
+      id: Symbol(label),
+      label,
+      points,
+      center: polygonCentroid(points),
+    };
+  }
+
+  const fallbackCenter = { x: W * 0.5, y: H * 0.28 };
+  const fallbackPoints = [
+    { x: fallbackCenter.x - 42, y: fallbackCenter.y - 26 },
+    { x: fallbackCenter.x - 6,  y: fallbackCenter.y - 36 },
+    { x: fallbackCenter.x + 38, y: fallbackCenter.y - 12 },
+    { x: fallbackCenter.x + 44, y: fallbackCenter.y + 24 },
+    { x: fallbackCenter.x + 4,  y: fallbackCenter.y + 38 },
+    { x: fallbackCenter.x - 36, y: fallbackCenter.y + 14 },
+  ];
+  return {
+    id: Symbol(label),
+    label,
+    points: fallbackPoints,
+    center: polygonCentroid(fallbackPoints),
+  };
+}
+
+function syncConditionedAreasWithLevel() {
+  // Uma nova área condicionada a cada nível par (2, 4, 6, ...)
+  const targetCount = Math.floor(level / 2);
+  while (conditionedAreas.length < targetCount) {
+    conditionedAreas.push(createConditionedArea());
+  }
+}
+
+function drawConditionedAreas() {
+  conditionedAreas.forEach(area => {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(area.points[0].x, area.points[0].y);
+    for (let index = 1; index < area.points.length; index++) {
+      ctx.lineTo(area.points[index].x, area.points[index].y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(170, 0, 0, 0.18)';
+    ctx.strokeStyle = 'rgba(215, 0, 0, 0.9)';
+    ctx.lineWidth = 2.4;
+    ctx.lineJoin = 'miter';
+    ctx.miterLimit = 12;
+    ctx.lineCap = 'butt';
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 12px "Orbitron", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(area.label, area.center.x, area.center.y);
+    ctx.restore();
+  });
+}
 
 function randomLetters(length) {
   const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -1016,6 +1599,7 @@ function update() {
   frame++;
   sweepAngle = (sweepAngle + 0.002) % (Math.PI*2);
   spawnTimer++;
+  syncConditionedAreasWithLevel();
 
   const maxAC = Math.min(Math.round((2 + level) * Math.pow(AC_GROWTH_FACTOR, level - 1)), 16);
   if (spawnTimer >= spawnInt && aircraft.length < maxAC) {
@@ -1025,21 +1609,8 @@ function update() {
   }
 
   // Move
-  aircraft.forEach(ac => {
+  for (const ac of aircraft) {
     ac.age++;
-    
-    // Curvas aleatórias em níveis mais difíceis
-    if (level >= 3 && ac.age >= ac.nextTurnFrame) {
-      // Frequência de curvas aumenta com o nível
-      const curveChance = Math.min(0.6 * AUTO_CURVE_FACTOR, (0.1 + level * 0.05) * AUTO_CURVE_FACTOR);
-      if (Math.random() < curveChance) {
-        // Gera uma curva aleatória: -90° a +90°
-        const curveAmount = rnd(-Math.PI/2, Math.PI/2);
-        ac.targetHdg += curveAmount;
-      }
-      // Próxima curva em 200-600 frames
-      ac.nextTurnFrame = ac.age + rndInt(200, 600 - level*30);
-    }
     
     // Mudanças de nível em níveis muito difíceis
     if (level >= 5 && ac.age >= ac.nextFlChangeFrame) {
@@ -1069,12 +1640,20 @@ function update() {
     ac.x += Math.cos(ac.hdg)*ac.speed;
     ac.y += Math.sin(ac.hdg)*ac.speed;
 
+    const invadedArea = conditionedAreas.find(area => pointInPolygon(ac.x, ac.y, area.points));
+    if (invadedArea) {
+      triggerZoneViolationGameOver(ac, invadedArea);
+      return;
+    }
+
     // sweep glow
     const aAngle = Math.atan2(ac.y-CY, ac.x-CX);
     const ad = ((sweepAngle - aAngle)%(Math.PI*2)+Math.PI*2)%(Math.PI*2);
     if (ad < 0.18) ac.sweepBright = 1.0;
     else ac.sweepBright = Math.max(0, ac.sweepBright - 0.009);
-  });
+  }
+
+  if (gameOver) return;
 
   // Remove saídas
   aircraft = aircraft.filter(ac => {
@@ -1093,12 +1672,11 @@ function update() {
     for (let j=i+1; j<aircraft.length; j++) {
       const a=aircraft[i], b=aircraft[j];
       const d=dist2(a,b);
-      const dfl=Math.abs(a.fl-b.fl);
-      // Colisão: aeronaves muito próximas e pouca separação vertical
-      if (d < 20 && dfl < SEP_FL) {
+      // Colisão: aeronaves muito próximas no mesmo FL
+      if (d < 20 && a.fl === b.fl) {
         // COLISÃO
-        triggerGameOver(a,b); return;
-      } else if (d < 50 && dfl < SEP_FL*1.5) {
+        triggerAircraftCollisionGameOver(a,b); return;
+      } else if (d < 50 && a.fl === b.fl) {
         conflicts.add(a.id); conflicts.add(b.id);
       }
     }
@@ -1108,7 +1686,12 @@ function update() {
   // Score passivo
   if (frame%60===0 && aircraft.length>1) {
     score += aircraft.length * 2;
-    level  = Math.floor(score/500)+1;
+    const previousLevel = level;
+    level = Math.floor(score/500)+1;
+    if (level > previousLevel) {
+      showLevelChangeAlert(level);
+    }
+    syncConditionedAreasWithLevel();
     updateScoreUI();
   }
 
@@ -1174,6 +1757,8 @@ function draw() {
   ctx.fillText('W', 15, CY);
   ctx.textAlign='left';
   ctx.textBaseline='alphabetic';
+
+  drawConditionedAreas();
 
   // Aeronaves
   aircraft.forEach(drawAC);
@@ -1368,6 +1953,18 @@ function updateCounters() {
     :``;
 }
 
+function showLevelChangeAlert(newLevel) {
+  const levelAlert = document.getElementById('level-up-alert');
+  if (!levelAlert) return;
+  levelAlert.textContent = `⬆ NÍVEL ${newLevel}`;
+  levelAlert.classList.add('show');
+  if (levelAlertTimer) clearTimeout(levelAlertTimer);
+  levelAlertTimer = setTimeout(() => {
+    levelAlert.classList.remove('show');
+    levelAlertTimer = null;
+  }, 3500);
+}
+
 function updateScoreUI() {
   document.getElementById('score-display').textContent=score;
   const nms=['INICIANTE','LEVE','MÉDIO','PESADO','CAOS'];
@@ -1398,12 +1995,15 @@ function showPanel(ac) {
     [`▶ DIREITA 30°`,           ac.hdg+Math.PI/6],
     [`↺ REVERSO 180°`,          ac.hdg+Math.PI],
   ];
-  const flUp=Math.min(ac.fl+10, FL_MAX);
-  const flDown=Math.max(ac.fl-10, FL_MIN);
-  const flOpts=[
-    [`⬆ SUBIR FL${String(flUp).padStart(3,'0')}`, flUp],
-    [`⬇ DESCER FL${String(flDown).padStart(3,'0')}`, flDown],
-  ];
+  const flOpts=[];
+  if (ac.fl < FL_MAX) {
+    const flUp = ac.fl + 10;
+    flOpts.push([`⬆ SUBIR FL${String(flUp).padStart(3,'0')}`, flUp]);
+  }
+  if (ac.fl > FL_MIN) {
+    const flDown = ac.fl - 10;
+    flOpts.push([`⬇ DESCER FL${String(flDown).padStart(3,'0')}`, flDown]);
+  }
   const isHarpia = ac.callsign.startsWith('HARPIA');
   const gsMin = isHarpia ? 30 : 110;
   const gsMax = isHarpia ? 160 : 480;
@@ -1532,20 +2132,34 @@ canvas.addEventListener('touchend', e=>{
 },{passive:false});
 
 // ── GAME OVER ─────────────────────────────────
-function triggerGameOver(a,b) {
+function triggerGameOver(title, messageHtml, detailsText) {
   gameOver=true;
   cancelAnimationFrame(rafId);
   pendingCollisionScore = score;
   
   const ov=document.getElementById('modal-overlay');
   ov.classList.remove('hidden');
-  document.getElementById('modal-title').textContent='💥 COLISÃO';
+  document.getElementById('modal-title').textContent=title;
   document.getElementById('modal-score').textContent=score;
-  document.getElementById('modal-msg').innerHTML=
-    `<strong style="color:var(--red)">${a.callsign}</strong> × <strong style="color:var(--red)">${b.callsign}</strong> — separação violada.`;
-  document.getElementById('modal-sep').textContent=
-    `${aircraft.length} aeronave(s) no setor. Score: ${score}`;
+  document.getElementById('modal-msg').innerHTML=messageHtml;
+  document.getElementById('modal-sep').textContent=detailsText;
   openNameEntryModal();
+}
+
+function triggerAircraftCollisionGameOver(a,b) {
+  triggerGameOver(
+    '💥 COLISÃO',
+    `<strong style="color:var(--red)">${a.callsign}</strong> × <strong style="color:var(--red)">${b.callsign}</strong> — separação violada.`,
+    `${aircraft.length} aeronave(s) no setor. Score: ${score}`
+  );
+}
+
+function triggerZoneViolationGameOver(ac, area) {
+  triggerGameOver(
+    '🚫 ESPAÇO CONDICIONADO',
+    `<strong style="color:var(--red)">${ac.callsign}</strong> ingressou na área <strong style="color:var(--red)">${area.label}</strong>.`,
+    `${aircraft.length} aeronave(s) no setor. Violação em área condicionada. Score: ${score}`
+  );
 }
 
 // ── RESTART ───────────────────────────────────
@@ -1554,9 +2168,18 @@ function goToMenu() {
   cancelAnimationFrame(rafId);
   document.getElementById('start-overlay').classList.remove('hidden');
   document.getElementById('btn-resume').style.display = gameStarted ? 'block' : 'none';
+  document.getElementById('btn-restart').style.display = gameStarted ? 'block' : 'none';
   document.getElementById('btn-start').style.display = gameStarted ? 'none' : 'block';
   selectedAC = null;
   hidePanel();
+}
+
+function restartFromMenu() {
+  if (!gameStarted) {
+    startGame();
+    return;
+  }
+  restartGame();
 }
 
 function resumeGame() {
@@ -1579,9 +2202,12 @@ function startGame() {
     frame = 0;
     console.log('✓ gameStarted set to true');
     loadHighScore();
+    flushPendingScoresQueue();
+    refreshTopScoresFromCloud();
     console.log('✓ loadHighScore() completed, highScore =', highScore);
     document.getElementById('start-overlay').classList.add('hidden');
     document.getElementById('btn-resume').style.display = 'none';
+    document.getElementById('btn-restart').style.display = 'none';
     document.getElementById('btn-start').style.display = 'block';
     console.log('✓ start-overlay hidden');
     restartGame();
@@ -1602,7 +2228,16 @@ function closeAbout() {
 
 function openHighScores() {
   updateHighScoresDisplay();
+  setScoresSyncStatus('syncing');
+  const spinner = document.getElementById('scores-loading');
+  spinner.classList.add('visible');
   document.getElementById('high-scores-overlay').classList.remove('hidden');
+  refreshTopScoresFromCloud().then(updated => {
+    spinner.classList.remove('visible');
+    if (updated) updateHighScoresDisplay();
+  }).catch(() => {
+    spinner.classList.remove('visible');
+  });
 }
 
 function closeHighScores() {
@@ -1616,7 +2251,7 @@ function updateHighScoresDisplay() {
     return;
   }
   list.innerHTML = topScores.map((entry, idx) => 
-    `<div class="score-item"><span class="score-rank">#${idx + 1}</span><span style="flex:1; text-align:left; color:var(--text); margin:0 10px">${escapeHtml(entry.name)}</span><span class="score-value">${entry.score}</span></div>`
+    `<div class="score-item"><span class="score-rank">#${idx + 1}</span><span class="score-player"><span class="score-player-icon"></span><span class="score-player-name">${escapeHtml(entry.name)}</span></span><span class="score-value">${entry.score}</span></div>`
   ).join('');
 }
 
@@ -1624,9 +2259,16 @@ function restartGame() {
   console.log('🔄 restartGame() called, gameStarted =', gameStarted);
   aircraft=[]; score=0; level=1; gameOver=false; gamePaused=false;
   pendingCollisionScore = null;
+  conditionedAreas = [];
+  usedConditionedAreaCodes = new Set();
   selectedAC=null; conflicts=new Set(); frame=0;
   spawnTimer=0; spawnInt=320; sweepAngle=0;
   isDragging=false; draggingLabel=null;
+  if (levelAlertTimer) {
+    clearTimeout(levelAlertTimer);
+    levelAlertTimer = null;
+  }
+  document.getElementById('level-up-alert').classList.remove('show');
   document.getElementById('modal-overlay').classList.add('hidden');
   document.getElementById('name-entry').classList.add('hidden');
   document.getElementById('player-name-input').value='';
@@ -1678,6 +2320,8 @@ window.addEventListener('resize',()=>{resize();});
 window.addEventListener('load',()=>{ 
   console.log('🚀 Window loaded!');
   resize(); 
+  setupPendingQueueAutoRetry();
+  flushPendingScoresQueue();
 });
 window.doRedirect=doRedirect;
 window.doChangeLevel=doChangeLevel;
