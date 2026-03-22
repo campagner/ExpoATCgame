@@ -366,6 +366,30 @@ body::before {
   transform: translateX(-50%) translateY(0);
 }
 
+#area-warning {
+  position: absolute;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 130;
+  padding: 8px 16px;
+  border: 2px solid var(--red);
+  background: rgba(15, 15, 15, 0.90);
+  color: var(--red);
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px var(--red);
+  box-shadow: 0 0 14px rgba(255,68,68,0.4);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#area-warning.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* ── MODAL ── */
 #modal-overlay {
   position: fixed; inset: 0;
@@ -509,12 +533,32 @@ body::before {
   padding: 14px 30px;
   cursor: pointer;
   width: 100%;
+  white-space: nowrap;
   text-shadow: 0 0 8px var(--green);
 }
 #start-screen button:active { 
   background: var(--green); 
   color:#000; 
   text-shadow: none;
+}
+@media (max-width: 390px) {
+  #start-screen {
+    width: 94vw;
+    min-width: 0;
+    padding: 30px 16px;
+  }
+  #start-screen h1 {
+    font-size: 24px;
+    letter-spacing: 2px;
+  }
+  #start-screen .subtitle {
+    letter-spacing: 1px;
+  }
+  #start-screen button {
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 12px 10px;
+  }
 }
 /* ── MODAL SOBRE ── */
 #about-overlay {
@@ -714,7 +758,7 @@ body::before {
       <span id="conflict-count" style="color:var(--red)">CONF:0</span>
     </div>
     <div class="menu-buttons">
-      <button onclick="restartGame()">REINICIAR</button>
+      <button id="btn-restart-game" onclick="restartGame()">REINICIAR</button>
       <button onclick="goToMenu()">MENU</button>
     </div>
   </div>
@@ -724,6 +768,7 @@ body::before {
       <canvas id="radar"></canvas>
       <div id="redirect-panel" class="hidden"></div>
       <div id="level-up-alert"></div>
+      <div id="area-warning"></div>
     </div>
 
     <div id="strips-bar">
@@ -753,7 +798,7 @@ body::before {
     <p id="modal-msg"></p>
     <p id="modal-sep"></p>
     <div id="name-entry" class="name-entry hidden">
-      <label for="player-name-input">REGISTRE O CONTROLADOR DE VOO</label>
+      <label id="name-label" for="player-name-input">REGISTRE O CONTROLADOR DE VOO</label>
       <input
         id="player-name-input"
         type="text"
@@ -776,28 +821,28 @@ body::before {
       <div><span>▸</span> Clique nas pistas ou nas strips para selecionar</div>
       <div><span>▸</span> Altere proa, nível e velocidade</div>
       <div><span>▸</span> Arraste as etiquetas para reposicionar</div>
-      <div><span>▸</span> Mantenha a separação lateral ou garanta FL diferente</div>
-      <div><span>▸</span> Evite ingresso em espaços aéreos condicionados, independente do FL</div>
+      <div><span>▸</span> Mantenha a separação lateral ou garanta FL (nível de voo - altitude) diferente</div>
+      <div><span>▸</span> Evite ingresso em espaços aéreos condicionados, independente do FL (nível de voo - altitude)</div>
     </div>
     <button id="btn-resume" onclick="resumeGame()" style="margin-bottom:10px; display:none">【 VOLTAR AO JOGO 】</button>
     <button id="btn-restart" onclick="restartFromMenu()" style="margin-bottom:10px; display:none">【 REINICIAR 】</button>
     <button id="btn-start" onclick="startGame()" style="margin-bottom:10px">【 INICIAR JOGO 】</button>
     <button onclick="openHighScores()" style="margin-bottom:10px">【 HIGH SCORES 】</button>
-    <button onclick="openAbout()">【 SOBRE 】</button>
+    <button id="btn-about" onclick="openAbout()">【 SOBRE 】</button>
   </div>
 </div>
 <div id="about-overlay" class="hidden">
   <div id="about-screen">
-    <h2>SOBRE</h2>
-    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.0 (beta)</div>
+    <h2 id="about-title">SOBRE</h2>
+    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.1 (teste fechado)</div>
     <div class="about-content">
-      <div><strong>Desenvolvimento</strong></div>
+      <div id="about-dev"><strong>Desenvolvimento</strong></div>
       <div>ATC RADAR SBVT</div>
-      <div style="margin-top:20px"><strong>Gestor do Projeto</strong></div>
+      <div id="about-pm" style="margin-top:20px"><strong>Gestor do Projeto</strong></div>
       <div>Alexandre Campagner Carvalho</div>
-      <div style="color:var(--dim); font-size:10px">Bacharel em Sistemas de Informação</div>
+      <div id="about-bsc" style="color:var(--dim); font-size:10px">Bacharel em Sistemas de Informação</div>
     </div>
-    <button onclick="closeAbout()">【 VOLTAR 】</button>
+    <button id="btn-about-back" onclick="closeAbout()">【 VOLTAR 】</button>
   </div>
 </div>
 <div id="high-scores-overlay" class="hidden">
@@ -806,7 +851,7 @@ body::before {
     <div id="scores-sync-status"><span id="scores-sync-dot"></span><span id="scores-sync-text">MODO LOCAL</span></div>
     <div id="scores-loading"><div class="scores-spinner"></div></div>
     <div id="scores-list"></div>
-    <button onclick="closeHighScores()">【 VOLTAR 】</button>
+    <button id="btn-scores-back" onclick="closeHighScores()">【 VOLTAR 】</button>
   </div>
 </div>
 <script>
@@ -817,6 +862,148 @@ console.log('══════════════════════�
 // ══════════════════════════════════════════════
 //  ATC RADAR GAME ENGINE
 // ══════════════════════════════════════════════
+
+// ── INTERNACIONALIZAÇÃO (auto-detecção) ───────
+const STRINGS = {
+  pt: {
+    subtitle:      'CONTROLE DE TRÁFEGO AÉREO',
+    instr:         [
+      'Clique nas pistas ou nas strips para selecionar',
+      'Altere proa, nível e velocidade',
+      'Arraste as etiquetas para reposicionar',
+      'Mantenha a separação lateral ou garanta FL (nível de voo - altitude) diferente',
+      'Evite ingresso em espaços aéreos condicionados, independente do FL (nível de voo - altitude)',
+    ],
+    btnResume:     '【 VOLTAR AO JOGO 】',
+    btnRestart:    '【 REINICIAR 】',
+    btnStart:      '【 INICIAR JOGO 】',
+    btnAbout:      '【 SOBRE 】',
+    btnBack:       '【 VOLTAR 】',
+    aboutTitle:    'SOBRE',
+    aboutDev:      'Desenvolvimento',
+    aboutPM:       'Gestor do Projeto',
+    aboutBsc:      'Bacharel em Sistemas de Informação',
+    nameLabel:     'REGISTRE O CONTROLADOR DE VOO',
+    namePlaceholder: 'CONTROLADOR',
+    nameTip:       'Pressione ENTER ou toque no botão para confirmar',
+    modalSave:     '[ SALVAR E NOVO TURNO ]',
+    modalNew:      '[ NOVO TURNO ]',
+    localMode:     'MODO LOCAL',
+    syncing:       'SINCRONIZANDO...',
+    pendingLabel:  (n) => `• ${n} PENDENTE(S)`,
+    noScores:      'Nenhum score registrado',
+    conflict:      '⚠ CONFLITO — SEPARE JÁ',
+    levelUp:       (n) => `⬆ NÍVEL ${n}`,
+    areaWarning:   '🚨 vem aí um espaço aéreo condicionado',
+    levelNames:    ['INICIANTE','LEVE','MÉDIO','PESADO','CAOS'],
+    levelLabel:    (n, name) => `NÍV.${n} ${name} | High Score:`,
+    redirected:    (cs) => `✓ ${cs} REDIRECIONADA`,
+    btnRestartGame:'REINICIAR',
+    collisionTitle:'💥 COLISÃO',
+    collisionMsg:  (a, b) => `<strong style="color:var(--red)">${a}</strong> × <strong style="color:var(--red)">${b}</strong> — separação violada.`,
+    collisionDet:  (n, s) => `${n} aeronave(s) no setor. Score: ${s}`,
+    zoneTitle:     '🚫 ESPAÇO CONDICIONADO',
+    zoneMsg:       (cs, lb) => `<strong style="color:var(--red)">${cs}</strong> ingressou na área <strong style="color:var(--red)">${lb}</strong>.`,
+    zoneDet:       (n, s) => `${n} aeronave(s) no setor. Violação em área condicionada. Score: ${s}`,
+    panelLeft:     '◀ ESQUERDA 30°',
+    panelRight:    '▶ DIREITA 30°',
+    panelReverse:  '↺ REVERSO 180°',
+    panelClimb:    (fl) => `⬆ SUBIR FL${fl}`,
+    panelDescend:  (fl) => `⬇ DESCER FL${fl}`,
+    panelSpeedUp:  (gs) => `➕ ACELERAR ${gs}KT`,
+    panelSlowDown: (gs) => `➖ REDUZIR ${gs}KT`,
+    panelCancel:   'CANCELAR',
+  },
+  en: {
+    subtitle:      'AIR TRAFFIC CONTROL',
+    instr:         [
+      'Click on aircraft or strips to select',
+      'Change heading, flight level and speed',
+      'Drag labels to reposition them',
+      'Maintain lateral separation or ensure different FL (flight level - altitude)',
+      'Avoid entering conditioned airspace, regardless of FL (flight level - altitude)',
+    ],
+    btnResume:     '【 BACK TO GAME 】',
+    btnRestart:    '【 RESTART 】',
+    btnStart:      '【 START GAME 】',
+    btnAbout:      '【 ABOUT 】',
+    btnBack:       '【 BACK 】',
+    aboutTitle:    'ABOUT',
+    aboutDev:      'Development',
+    aboutPM:       'Project Manager',
+    aboutBsc:      'B.Sc. Information Systems',
+    nameLabel:     'REGISTER THE AIR TRAFFIC CONTROLLER',
+    namePlaceholder: 'CONTROLLER',
+    nameTip:       'Press ENTER or tap the button to confirm',
+    modalSave:     '[ SAVE & NEW GAME ]',
+    modalNew:      '[ NEW GAME ]',
+    localMode:     'LOCAL MODE',
+    syncing:       'SYNCING...',
+    pendingLabel:  (n) => `• ${n} PENDING`,
+    noScores:      'No scores recorded',
+    conflict:      '⚠ CONFLICT — SEPARATE NOW',
+    levelUp:       (n) => `⬆ LEVEL ${n}`,
+    areaWarning:   '🚨 conditioned airspace incoming',
+    levelNames:    ['BEGINNER','LIGHT','MEDIUM','HEAVY','CHAOS'],
+    levelLabel:    (n, name) => `LVL.${n} ${name} | High Score:`,
+    redirected:    (cs) => `✓ ${cs} REDIRECTED`,
+    btnRestartGame:'RESTART',
+    collisionTitle:'💥 COLLISION',
+    collisionMsg:  (a, b) => `<strong style="color:var(--red)">${a}</strong> × <strong style="color:var(--red)">${b}</strong> — separation violated.`,
+    collisionDet:  (n, s) => `${n} aircraft in sector. Score: ${s}`,
+    zoneTitle:     '🚫 CONDITIONED AIRSPACE',
+    zoneMsg:       (cs, lb) => `<strong style="color:var(--red)">${cs}</strong> entered area <strong style="color:var(--red)">${lb}</strong>.`,
+    zoneDet:       (n, s) => `${n} aircraft in sector. Airspace violation. Score: ${s}`,
+    panelLeft:     '◀ LEFT 30°',
+    panelRight:    '▶ RIGHT 30°',
+    panelReverse:  '↺ REVERSE 180°',
+    panelClimb:    (fl) => `⬆ CLIMB FL${fl}`,
+    panelDescend:  (fl) => `⬇ DESCEND FL${fl}`,
+    panelSpeedUp:  (gs) => `➕ SPEED UP ${gs}KT`,
+    panelSlowDown: (gs) => `➖ SLOW DOWN ${gs}KT`,
+    panelCancel:   'CANCEL',
+  }
+};
+
+let lang = 'pt';
+
+function applyLang() {
+  lang = (navigator.language || 'pt').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+  document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+  const S = STRINGS[lang];
+
+  // Tela inicial
+  document.querySelector('.subtitle').textContent = S.subtitle;
+  const instrDivs = document.querySelectorAll('.instructions div');
+  S.instr.forEach((txt, i) => {
+    if (instrDivs[i]) instrDivs[i].innerHTML = `<span>▸</span> ${txt}`;
+  });
+  document.getElementById('btn-resume').textContent  = S.btnResume;
+  document.getElementById('btn-restart').textContent = S.btnRestart;
+  document.getElementById('btn-start').textContent   = S.btnStart;
+  document.getElementById('btn-about').textContent   = S.btnAbout;
+
+  // Sobre
+  document.getElementById('about-title').textContent = S.aboutTitle;
+  document.getElementById('about-dev').innerHTML     = `<strong>${S.aboutDev}</strong>`;
+  document.getElementById('about-pm').innerHTML      = `<strong>${S.aboutPM}</strong>`;
+  document.getElementById('about-bsc').textContent   = S.aboutBsc;
+  document.getElementById('btn-about-back').textContent  = S.btnBack;
+
+  // High Scores
+  document.getElementById('btn-scores-back').textContent = S.btnBack;
+  document.getElementById('scores-sync-text').textContent = S.localMode;
+
+  // Modal game over
+  document.getElementById('name-label').textContent         = S.nameLabel;
+  document.getElementById('player-name-input').placeholder  = S.namePlaceholder;
+  document.getElementById('name-entry-tip').textContent     = S.nameTip;
+  document.getElementById('modal-action-btn').textContent   = S.modalSave;
+
+  // Topbar
+  document.getElementById('btn-restart-game').textContent = S.btnRestartGame;
+}
+
 
 const canvas = document.getElementById('radar');
 const ctx    = canvas.getContext('2d');
@@ -857,6 +1044,7 @@ const CONDITIONED_AREA_MAX_RADIUS = 54;
 const CONDITIONED_AREA_MIN_RADIUS = 26;
 const CONDITIONED_AREA_ALLOWED_SIDES = [4, 6, 8];
 let W, H, CX, CY, R;
+let PLAYABLE_MAX_Y = 0;
 
 let sweepAngle  = 0;
 let score       = 0;
@@ -880,6 +1068,8 @@ let pendingCollisionScore = null;
 let conditionedAreas = [];
 let usedConditionedAreaCodes = new Set();
 let levelAlertTimer = null;
+let areaWarningTimer = null;
+let areaWarningShownForLevel = 0;
 
 // ── CARREGAR MAPA ──────────────────────────────
 const img = new Image();
@@ -1048,26 +1238,26 @@ function setScoresSyncStatus(state = 'local', pendingCount = null) {
   }
 
   if (!isCloudLeaderboardEnabled()) {
-    applyStatusVisual('MODO LOCAL', 'var(--dim)');
+    applyStatusVisual(STRINGS[lang].localMode, 'var(--dim)');
     return;
   }
 
   const pending = pendingCount === null ? loadPendingScoresQueue().length : pendingCount;
 
   if (state === 'syncing') {
-    applyStatusVisual('SINCRONIZANDO...', 'var(--amber)');
+    applyStatusVisual(STRINGS[lang].syncing, 'var(--amber)');
     return;
   }
 
   if (state === 'online') {
     applyStatusVisual(
-      pending > 0 ? `ONLINE • ${pending} PENDENTE(S)` : 'ONLINE',
+      pending > 0 ? `ONLINE ${STRINGS[lang].pendingLabel(pending)}` : 'ONLINE',
       pending > 0 ? 'var(--amber)' : 'var(--green)'
     );
     return;
   }
 
-  applyStatusVisual(pending > 0 ? `OFFLINE • ${pending} PENDENTE(S)` : 'OFFLINE', 'var(--red)');
+  applyStatusVisual(pending > 0 ? `OFFLINE ${STRINGS[lang].pendingLabel(pending)}` : 'OFFLINE', 'var(--red)');
 }
 
 async function callSupabaseRpc(rpcName, payload, timeoutMs = 4500) {
@@ -1271,7 +1461,7 @@ function openNameEntryModal() {
 
   if (shouldAskName) {
     nameEntry.classList.remove('hidden');
-    actionButton.textContent = '[ SALVAR E NOVO TURNO ]';
+    actionButton.textContent = STRINGS[lang].modalSave;
     input.value = '';
     setTimeout(() => {
       input.focus();
@@ -1279,7 +1469,7 @@ function openNameEntryModal() {
     }, 50);
   } else {
     nameEntry.classList.add('hidden');
-    actionButton.textContent = '[ NOVO TURNO ]';
+    actionButton.textContent = STRINGS[lang].modalNew;
   }
 }
 
@@ -1328,6 +1518,21 @@ function polygonCentroid(points) {
     x: centroidX * factor,
     y: centroidY * factor,
   };
+}
+
+function distPointToSegment(px, py, ax, ay, bx, by) {
+  const dx = bx - ax, dy = by - ay;
+  const lenSq = dx*dx + dy*dy;
+  if (lenSq === 0) return Math.hypot(px - ax, py - ay);
+  const t = Math.max(0, Math.min(1, ((px - ax)*dx + (py - ay)*dy) / lenSq));
+  return Math.hypot(px - (ax + t*dx), py - (ay + t*dy));
+}
+
+function pointNearPolygon(x, y, points, threshold) {
+  for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+    if (distPointToSegment(x, y, points[j].x, points[j].y, points[i].x, points[i].y) < threshold) return true;
+  }
+  return false;
 }
 
 function pointInPolygon(x, y, points) {
@@ -1393,6 +1598,12 @@ function createConditionedArea() {
 
     const tooCloseToAnotherArea = conditionedAreas.some(area => dist2(area.center, { x: centerX, y: centerY }) < 120);
     if (tooCloseToAnotherArea) continue;
+
+    // Não pode surgir com nenhum ponto a menos de 120px de qualquer aeronave na tela
+    const tooCloseToAC = aircraft.some(ac =>
+      points.some(pt => dist2(pt, ac) < 120) || dist2({ x: centerX, y: centerY }, ac) < 120
+    );
+    if (tooCloseToAC) continue;
 
     return {
       id: Symbol(label),
@@ -1537,6 +1748,7 @@ function spawnAC() {
   const margin = 20;
   const maxSpawnAttempts = 48;
   const worstCaseSpawnSpeed = 480 * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
+  const spawnMaxY = Math.max(margin + 1, PLAYABLE_MAX_Y - margin);
 
   for (let attempt = 0; attempt < maxSpawnAttempts; attempt++) {
     // Spawn nas bordas retangulares da tela
@@ -1551,19 +1763,23 @@ function spawnAC() {
       hdg = Math.PI/2 + rnd(-0.5, 0.5); // Apontando para baixo
     } else if (edge === 1) { // Right
       ex = W - margin;
-      ey = rnd(margin, H - margin);
+      ey = rnd(margin, spawnMaxY);
       hdg = Math.PI + rnd(-0.5, 0.5); // Apontando para esquerda
     } else if (edge === 2) { // Bottom
       ex = rnd(margin, W - margin);
-      ey = H - margin;
+      ey = spawnMaxY;
       hdg = -Math.PI/2 + rnd(-0.5, 0.5); // Apontando para cima
     } else { // Left
       ex = margin;
-      ey = rnd(margin, H - margin);
+      ey = rnd(margin, spawnMaxY);
       hdg = rnd(-0.5, 0.5); // Apontando para direita
     }
 
     if (!isSpawnRouteSafe(ex, ey, hdg, worstCaseSpawnSpeed)) continue;
+
+    // Não pode surgir a menos de 120px de qualquer aeronave existente
+    const tooCloseToAircraft = aircraft.some(ac => dist2({ x: ex, y: ey }, ac) < 120);
+    if (tooCloseToAircraft) continue;
 
     const dest = pick(AIRPORTS);
     const callsign = uniqCallsign();
@@ -1620,6 +1836,21 @@ function resize() {
   CX = W/2;
   CY = H/2;
   R = Math.min(W, H) / 2 - 20; // Raio de referência para escala
+
+  const stripsBar = document.getElementById('strips-bar');
+  const sidebar = document.getElementById('sidebar');
+  let occlusionTop = H;
+
+  if (stripsBar) {
+    const stripsRect = stripsBar.getBoundingClientRect();
+    occlusionTop = Math.min(occlusionTop, stripsRect.top - rect.top);
+  }
+  if (sidebar) {
+    const sidebarRect = sidebar.getBoundingClientRect();
+    occlusionTop = Math.min(occlusionTop, sidebarRect.top - rect.top);
+  }
+
+  PLAYABLE_MAX_Y = Math.max(0, Math.min(H, occlusionTop));
   console.log('✓ Canvas resized:', W, 'x', H);
 }
 
@@ -1690,15 +1921,26 @@ function update() {
   if (gameOver) return;
 
   // Remove saídas
+  let removedSelectedAircraft = false;
+  let removedDraggingAircraft = false;
   aircraft = aircraft.filter(ac => {
-    // Remove aeronaves que saem da tela (com margem)
-    const margin = 50;
-    if ((ac.x < -margin || ac.x > W+margin || ac.y < -margin || ac.y > H+margin) && ac.age>80) {
+    // Remove aeronaves assim que o símbolo cruza a borda visível
+    if (ac.x < 0 || ac.x > W || ac.y < 0 || ac.y > PLAYABLE_MAX_Y) {
       if (!ac.separated) score = Math.max(0,score-10);
+      if (selectedAC && selectedAC.id === ac.id) removedSelectedAircraft = true;
+      if (draggingLabel && draggingLabel.id === ac.id) removedDraggingAircraft = true;
       return false;
     }
     return true;
   });
+
+  if (removedSelectedAircraft) {
+    hidePanel();
+  }
+  if (removedDraggingAircraft) {
+    isDragging = false;
+    draggingLabel = null;
+  }
 
   // Conflitos
   conflicts.clear();
@@ -1707,15 +1949,27 @@ function update() {
       const a=aircraft[i], b=aircraft[j];
       const d=dist2(a,b);
       // Colisão: aeronaves muito próximas no mesmo FL
-      if (d < 20 && a.fl === b.fl) {
+      if (d < 35 && a.fl === b.fl) {
         // COLISÃO
         triggerAircraftCollisionGameOver(a,b); return;
-      } else if (d < 50 && a.fl === b.fl) {
+      } else if (d < 120 && a.fl === b.fl) {
         conflicts.add(a.id); conflicts.add(b.id);
       }
     }
   }
   aircraft.forEach(ac => ac.conflict = conflicts.has(ac.id));
+
+  // Alerta de proximidade a áreas restritas
+  if (conditionedAreas.length > 0) {
+    const ZONE_ALERT_DIST = 40;
+    for (const ac of aircraft) {
+      if (!ac.conflict && conditionedAreas.some(area =>
+        pointNearPolygon(ac.x, ac.y, area.points, ZONE_ALERT_DIST)
+      )) {
+        ac.conflict = true;
+      }
+    }
+  }
 
   // Score passivo
   if (frame%60===0 && aircraft.length>1) {
@@ -1727,6 +1981,19 @@ function update() {
     }
     syncConditionedAreasWithLevel();
     updateScoreUI();
+
+    // Alerta antecipado de espaço aéreo condicionado (~3s antes)
+    const nextEvenLevel = level % 2 === 0 ? level + 2 : level + 1;
+    const nextEvenThreshold = (nextEvenLevel - 1) * 500;
+    const pointsPerTick = Math.max(1, aircraft.length) * 2;
+    if (
+      score < nextEvenThreshold &&
+      score + pointsPerTick * 3 >= nextEvenThreshold &&
+      areaWarningShownForLevel < nextEvenLevel
+    ) {
+      areaWarningShownForLevel = nextEvenLevel;
+      showConditionedAreaWarning();
+    }
   }
 
   updateCounters();
@@ -1793,6 +2060,9 @@ function draw() {
   ctx.textBaseline='alphabetic';
 
   drawConditionedAreas();
+
+  // Auto-separar etiquetas antes de desenhar
+  separateLabels();
 
   // Aeronaves
   aircraft.forEach(drawAC);
@@ -1913,6 +2183,46 @@ function drawAC(ac) {
   drawLabel(ac, isCon, isSel, solid, br);
 }
 
+// ── AUTO-SEPARAÇÃO DE ETIQUETAS ─────────────
+function separateLabels() {
+  if (aircraft.length < 2) return;
+  const PUSH  = 3;   // pixels de empurrão por iteração
+  const ITERS = 2;   // passagens por frame
+  const lw = 100, lh = 60;
+
+  for (let iter = 0; iter < ITERS; iter++) {
+    for (let i = 0; i < aircraft.length; i++) {
+      for (let j = i + 1; j < aircraft.length; j++) {
+        const a = aircraft[i], b = aircraft[j];
+        const ra = getLabelRect(a), rb = getLabelRect(b);
+
+        const overlapX = Math.min(ra.lx + lw, rb.lx + lw) - Math.max(ra.lx, rb.lx);
+        const overlapY = Math.min(ra.ly + lh, rb.ly + lh) - Math.max(ra.ly, rb.ly);
+        if (overlapX <= 0 || overlapY <= 0) continue;
+
+        // Vetor centro-a-centro
+        const cax = ra.lx + lw / 2, cay = ra.ly + lh / 2;
+        const cbx = rb.lx + lw / 2, cby = rb.ly + lh / 2;
+        let dx = cax - cbx, dy = cay - cby;
+        const d = Math.hypot(dx, dy);
+        if (d < 1) { dx = 1; dy = 0; } else { dx /= d; dy /= d; }
+
+        // Empurra cada etiqueta (exceto a que está sendo arrastada)
+        if (draggingLabel !== a) {
+          const nx = ra.lx + dx * PUSH, ny = ra.ly + dy * PUSH;
+          a.labelAngle    = Math.atan2(ny - a.y, nx - a.x);
+          a.labelDistance = Math.max(30, Math.min(200, Math.hypot(nx - a.x, ny - a.y)));
+        }
+        if (draggingLabel !== b) {
+          const nx = rb.lx - dx * PUSH, ny = rb.ly - dy * PUSH;
+          b.labelAngle    = Math.atan2(ny - b.y, nx - b.x);
+          b.labelDistance = Math.max(30, Math.min(200, Math.hypot(nx - b.x, ny - b.y)));
+        }
+      }
+    }
+  }
+}
+
 function getLabelRect(ac) {
   const lw = 100;
   const lh = 60;
@@ -1921,7 +2231,7 @@ function getLabelRect(ac) {
   const rawX = ac.x + labelDist * Math.cos(ac.labelAngle);
   const rawY = ac.y + labelDist * Math.sin(ac.labelAngle);
   const maxX = Math.max(pad, W - lw - pad);
-  const maxY = Math.max(pad, H - lh - pad);
+  const maxY = Math.max(pad, PLAYABLE_MAX_Y - lh - pad);
   const lx = Math.max(pad, Math.min(maxX, rawX));
   const ly = Math.max(pad, Math.min(maxY, rawY));
   return { lx, ly, lw, lh };
@@ -1983,14 +2293,26 @@ function updateCounters() {
   const n=conflicts.size;
   document.getElementById('conflict-count').textContent=`CONF:${n>0?Math.ceil(n/2):0}`;
   document.getElementById('status-left').innerHTML=n>0
-    ?`<span class="alert">⚠ CONFLITO — SEPARE JÁ</span>`
+    ?`<span class="alert">${STRINGS[lang].conflict}</span>`
     :``;
+}
+
+function showConditionedAreaWarning() {
+  const el = document.getElementById('area-warning');
+  if (!el) return;
+  el.textContent = STRINGS[lang].areaWarning;
+  el.classList.add('show');
+  if (areaWarningTimer) clearTimeout(areaWarningTimer);
+  areaWarningTimer = setTimeout(() => {
+    el.classList.remove('show');
+    areaWarningTimer = null;
+  }, 4000);
 }
 
 function showLevelChangeAlert(newLevel) {
   const levelAlert = document.getElementById('level-up-alert');
   if (!levelAlert) return;
-  levelAlert.textContent = `⬆ NÍVEL ${newLevel}`;
+  levelAlert.textContent = STRINGS[lang].levelUp(newLevel);
   levelAlert.classList.add('show');
   if (levelAlertTimer) clearTimeout(levelAlertTimer);
   levelAlertTimer = setTimeout(() => {
@@ -2001,8 +2323,8 @@ function showLevelChangeAlert(newLevel) {
 
 function updateScoreUI() {
   document.getElementById('score-display').textContent=score;
-  const nms=['INICIANTE','LEVE','MÉDIO','PESADO','CAOS'];
-  document.getElementById('level-display').textContent=`NÍV.${level} ${nms[Math.min(level-1,4)]} | High Score: ${highScore}`;
+  const nms = STRINGS[lang].levelNames;
+  document.getElementById('level-display').textContent=`${STRINGS[lang].levelLabel(level, nms[Math.min(level-1,4)])} ${highScore}`;
 }
 
 // ── SELEÇÃO / REDIRECT ─────────────────────────
@@ -2032,11 +2354,11 @@ function showPanel(ac) {
   const flOpts=[];
   if (ac.fl < FL_MAX) {
     const flUp = ac.fl + 10;
-    flOpts.push([`⬆ SUBIR FL${String(flUp).padStart(3,'0')}`, flUp]);
+    flOpts.push([STRINGS[lang].panelClimb(String(flUp).padStart(3,'0')), flUp]);
   }
   if (ac.fl > FL_MIN) {
     const flDown = ac.fl - 10;
-    flOpts.push([`⬇ DESCER FL${String(flDown).padStart(3,'0')}`, flDown]);
+    flOpts.push([STRINGS[lang].panelDescend(String(flDown).padStart(3,'0')), flDown]);
   }
   const isHarpia = ac.callsign.startsWith('HARPIA');
   const gsMin = isHarpia ? 30 : 110;
@@ -2044,8 +2366,8 @@ function showPanel(ac) {
   const gsUp=Math.min(ac.gs+50, gsMax);
   const gsDown=Math.max(ac.gs-50, gsMin);
   const gsOpts=[
-    [`➕ ACELERAR ${gsUp}KT`, gsUp],
-    [`➖ REDUZIR ${gsDown}KT`, gsDown],
+    [STRINGS[lang].panelSpeedUp(gsUp),   gsUp],
+    [STRINGS[lang].panelSlowDown(gsDown), gsDown],
   ];
 
   panel.innerHTML=`<div class="rp-title">▸ ${ac.callsign}</div>`
@@ -2054,7 +2376,7 @@ function showPanel(ac) {
     +flOpts.map(([l,fl])=>`<button class="rp-btn" onclick="doChangeLevel(${fl})">${l}</button>`).join('')
     +`<hr style="border:none;border-top:1px solid rgba(100,100,100,0.3);margin:3px 0;">`
     +gsOpts.map(([l,gs])=>`<button class="rp-btn" onclick="doChangeSpeed(${gs})">${l}</button>`).join('')
-    +`<button class="rp-cancel" onclick="hidePanel()">CANCELAR</button>`;
+    +`<button class="rp-cancel" onclick="hidePanel()">${STRINGS[lang].panelCancel}</button>`;
 }
 
 function hidePanel() {
@@ -2069,7 +2391,7 @@ function doRedirect(hdg) {
   score+=15; updateScoreUI();
   const cs=selectedAC.callsign;
   hidePanel();
-  document.getElementById('status-left').textContent=`✓ ${cs} REDIRECIONADA`;
+  document.getElementById('status-left').textContent = STRINGS[lang].redirected(cs);
 }
 
 function doChangeLevel(fl) {
@@ -2182,17 +2504,17 @@ function triggerGameOver(title, messageHtml, detailsText) {
 
 function triggerAircraftCollisionGameOver(a,b) {
   triggerGameOver(
-    '💥 COLISÃO',
-    `<strong style="color:var(--red)">${a.callsign}</strong> × <strong style="color:var(--red)">${b.callsign}</strong> — separação violada.`,
-    `${aircraft.length} aeronave(s) no setor. Score: ${score}`
+    STRINGS[lang].collisionTitle,
+    STRINGS[lang].collisionMsg(a.callsign, b.callsign),
+    STRINGS[lang].collisionDet(aircraft.length, score)
   );
 }
 
 function triggerZoneViolationGameOver(ac, area) {
   triggerGameOver(
-    '🚫 ESPAÇO CONDICIONADO',
-    `<strong style="color:var(--red)">${ac.callsign}</strong> ingressou na área <strong style="color:var(--red)">${area.label}</strong>.`,
-    `${aircraft.length} aeronave(s) no setor. Violação em área condicionada. Score: ${score}`
+    STRINGS[lang].zoneTitle,
+    STRINGS[lang].zoneMsg(ac.callsign, area.label),
+    STRINGS[lang].zoneDet(aircraft.length, score)
   );
 }
 
@@ -2281,7 +2603,7 @@ function closeHighScores() {
 function updateHighScoresDisplay() {
   const list = document.getElementById('scores-list');
   if (topScores.length === 0) {
-    list.innerHTML = '<div style="padding:20px; color:var(--dim)">Nenhum score registrado</div>';
+    list.innerHTML = `<div style="padding:20px; color:var(--dim)">${STRINGS[lang].noScores}</div>`;
     return;
   }
   list.innerHTML = topScores.map((entry, idx) => 
@@ -2298,6 +2620,9 @@ function restartGame() {
   selectedAC=null; conflicts=new Set(); frame=0;
   spawnTimer=0; spawnInt=320; sweepAngle=0;
   isDragging=false; draggingLabel=null;
+  areaWarningShownForLevel = 0;
+  if (areaWarningTimer) { clearTimeout(areaWarningTimer); areaWarningTimer = null; }
+  document.getElementById('area-warning').classList.remove('show');
   if (levelAlertTimer) {
     clearTimeout(levelAlertTimer);
     levelAlertTimer = null;
@@ -2353,6 +2678,7 @@ function loop() {
 window.addEventListener('resize',()=>{resize();});
 window.addEventListener('load',()=>{ 
   console.log('🚀 Window loaded!');
+  applyLang();
   resize(); 
   setupPendingQueueAutoRetry();
   flushPendingScoresQueue();
