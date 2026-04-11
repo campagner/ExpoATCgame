@@ -1,16 +1,49 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
+import { BackHandler, Platform, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Asset } from 'expo-asset';
 import { useEffect, useState } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as NavigationBar from 'expo-navigation-bar';
 
 export default function App() {
   const [html, setHtml] = useState(null);
   const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
   const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
+  function handleWebViewMessage(event) {
+    if (Platform.OS !== 'android') return;
+
+    const raw = event?.nativeEvent?.data;
+    if (!raw) return;
+
+    try {
+      const payload = JSON.parse(raw);
+      if (payload?.type === 'exit-app') {
+        BackHandler.exitApp();
+      }
+      return;
+    } catch (error) {
+      if (raw === 'exit-app') {
+        BackHandler.exitApp();
+      }
+    }
+  }
+
   useEffect(() => {
+    async function configureSystemBars() {
+      if (Platform.OS !== 'android') return;
+
+      try {
+        await NavigationBar.setPositionAsync('absolute');
+        await NavigationBar.setBackgroundColorAsync('#040a06');
+        await NavigationBar.setButtonStyleAsync('light');
+        await NavigationBar.setVisibilityAsync('hidden');
+      } catch (error) {
+        console.warn('Error configuring Android navigation bar:', error);
+      }
+    }
+
     // Carrega o HTML dos assets e injeta como string
     async function load() {
       try {
@@ -26,6 +59,8 @@ export default function App() {
         console.error('Error loading HTML:', error);
       }
     }
+
+    configureSystemBars();
     load();
   }, [supabaseAnonKey, supabaseUrl]);
 
@@ -33,7 +68,7 @@ export default function App() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" backgroundColor="#040a06" />
+      <StatusBar style="light" backgroundColor="#040a06" translucent hidden />
       <WebView
         style={styles.webview}
         source={{ html }}
@@ -44,6 +79,7 @@ export default function App() {
         overScrollMode="never"
         showsHorizontalScrollIndicator={false}
         showsVerticalScrollIndicator={false}
+        onMessage={handleWebViewMessage}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
           console.warn('WebView error: ', nativeEvent);

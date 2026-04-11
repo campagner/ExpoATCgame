@@ -63,7 +63,6 @@ body::before {
   overflow: hidden;
   margin: 0;
   padding: 0;
-  padding-top: env(safe-area-inset-top, 0px);
 }
 
 /* ── TOPBAR ── */
@@ -71,7 +70,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  padding: 6px 10px;
+  padding: calc(6px + env(safe-area-inset-top, 0px)) 10px 6px;
   border-bottom: 2px solid var(--green);
   background: #1a1a1a;
   flex-shrink: 0;
@@ -476,65 +475,110 @@ body::before {
 #start-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.95);
-  display: flex; align-items:center; justify-content:center;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+  overflow-y: auto;
   z-index: 600;
 }
 #start-screen {
   background: var(--panel);
   border: 3px solid var(--green);
   box-shadow: 0 0 50px rgba(200,200,200,0.4);
-  padding: 40px 36px;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 24px 28px;
   text-align: center;
-  min-width: 280px;
-  max-width: 400px;
-  width: 90vw;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
+  max-width: none;
+  max-height: none;
+  overflow-y: auto;
+  margin: 0;
 }
 #start-screen h1 {
   font-family: 'Orbitron', monospace;
-  font-size: 28px;
+  font-size: 24px;
   color: var(--green);
   text-shadow: 0 0 20px var(--green);
   margin-bottom: 8px;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   font-weight: 900;
 }
 #start-screen .subtitle {
   font-family: 'Orbitron', monospace;
-  font-size: 11px;
+  font-size: 9px;
   color: var(--amber);
   text-shadow: 0 0 8px var(--amber);
-  margin-bottom: 30px;
-  letter-spacing: 3px;
+  margin-bottom: 24px;
+  letter-spacing: 2px;
 }
 #start-screen .instructions {
   text-align: justify;
   text-justify: inter-word;
-  font-size: 11px;
+  font-size: 9px;
   color: var(--text);
-  margin: 20px 0;
-  line-height: 1.8;
+  margin: 17px 0;
+  line-height: 1.6;
 }
 #start-screen .instructions div {
-  margin-bottom: 8px;
+  margin-bottom: 7px;
   padding-left: 8px;
 }
 #start-screen .instructions span {
   color: var(--green);
 }
 #start-screen button {
-  margin-top: 25px;
+  margin-top: 21px;
   background: transparent;
   border: 3px solid var(--green);
   color: var(--green);
   font-family: 'Orbitron', monospace;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 3px;
-  padding: 14px 30px;
+  letter-spacing: 2px;
+  padding: 12px 26px;
   cursor: pointer;
   width: 100%;
   white-space: nowrap;
   text-shadow: 0 0 8px var(--green);
+}
+#start-screen .start-footer {
+  margin-top: auto;
+  padding-top: 10px;
+}
+#btn-language {
+  margin-top: 12px;
+  border: none;
+  background: transparent;
+  color: #00ff66;
+  text-shadow: 0 0 10px #00ff66;
+  box-shadow: none;
+  padding: 6px 0;
+  letter-spacing: 1px;
+  font-size: 11px;
+}
+#btn-language:active {
+  background: transparent;
+  color: #7dffb2;
+  text-shadow: 0 0 6px #7dffb2;
+}
+#btn-exit {
+  margin-top: 2px;
+  border: none;
+  background: transparent;
+  color: var(--red);
+  text-shadow: 0 0 8px rgba(255, 51, 51, 0.75);
+  box-shadow: none;
+  padding: 4px 0;
+  letter-spacing: 1px;
+  font-size: 10px;
+}
+#btn-exit:active {
+  background: transparent;
+  color: #ff9a9a;
+  text-shadow: 0 0 6px #ff9a9a;
 }
 #start-screen button:active { 
   background: var(--green); 
@@ -543,9 +587,7 @@ body::before {
 }
 @media (max-width: 390px) {
   #start-screen {
-    width: 94vw;
-    min-width: 0;
-    padding: 30px 16px;
+    padding: 22px 14px;
   }
   #start-screen h1 {
     font-size: 24px;
@@ -759,7 +801,7 @@ body::before {
     </div>
     <div class="menu-buttons">
       <button id="btn-restart-game" onclick="restartGame()">REINICIAR</button>
-      <button onclick="goToMenu()">MENU</button>
+      <button id="btn-menu" onclick="goToMenu()">MENU</button>
     </div>
   </div>
 
@@ -827,14 +869,18 @@ body::before {
     <button id="btn-resume" onclick="resumeGame()" style="margin-bottom:10px; display:none">【 VOLTAR AO JOGO 】</button>
     <button id="btn-restart" onclick="restartFromMenu()" style="margin-bottom:10px; display:none">【 REINICIAR 】</button>
     <button id="btn-start" onclick="startGame()" style="margin-bottom:10px">【 INICIAR JOGO 】</button>
-    <button onclick="openHighScores()" style="margin-bottom:10px">【 HIGH SCORES 】</button>
+    <button id="btn-high-scores" onclick="openHighScores()" style="margin-bottom:10px">【 HIGH SCORES 】</button>
     <button id="btn-about" onclick="openAbout()">【 SOBRE 】</button>
+    <div class="start-footer">
+      <button id="btn-language" onclick="toggleLanguage()">【 🇧🇷 PT | 🇺🇸 EN 】</button>
+      <button id="btn-exit" onclick="exitGame()">SAIR DO JOGO</button>
+    </div>
   </div>
 </div>
 <div id="about-overlay" class="hidden">
   <div id="about-screen">
     <h2 id="about-title">SOBRE</h2>
-    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.2 (teste fechado)</div>
+    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.3 (teste fechado)</div>
     <div class="about-content">
       <div id="about-dev"><strong>Desenvolvimento</strong></div>
       <div>ATC RADAR SBVT</div>
@@ -877,7 +923,11 @@ const STRINGS = {
     btnResume:     '【 VOLTAR AO JOGO 】',
     btnRestart:    '【 REINICIAR 】',
     btnStart:      '【 INICIAR JOGO 】',
+    btnHighScores: '【 HIGH SCORES 】',
+    btnLanguage:   '【 🇧🇷 PT | 🇺🇸 EN 】',
+    btnExit:       'SAIR DO JOGO',
     btnAbout:      '【 SOBRE 】',
+    btnMenu:       'MENU',
     btnBack:       '【 VOLTAR 】',
     aboutTitle:    'SOBRE',
     aboutDev:      'Desenvolvimento',
@@ -926,7 +976,11 @@ const STRINGS = {
     btnResume:     '【 BACK TO GAME 】',
     btnRestart:    '【 RESTART 】',
     btnStart:      '【 START GAME 】',
+    btnHighScores: '【 HIGH SCORES 】',
+    btnLanguage:   '【 🇧🇷 PT | 🇺🇸 EN 】',
+    btnExit:       'EXIT GAME',
     btnAbout:      '【 ABOUT 】',
+    btnMenu:       'MENU',
     btnBack:       '【 BACK 】',
     aboutTitle:    'ABOUT',
     aboutDev:      'Development',
@@ -965,10 +1019,53 @@ const STRINGS = {
   }
 };
 
+const LANG_STORAGE_KEY = 'atc-radar-language';
 let lang = 'pt';
+let preferredLang = null;
+
+function detectPreferredLang() {
+  if (preferredLang === 'pt' || preferredLang === 'en') {
+    return preferredLang;
+  }
+
+  try {
+    const storedLang = localStorage.getItem(LANG_STORAGE_KEY);
+    if (storedLang === 'pt' || storedLang === 'en') {
+      preferredLang = storedLang;
+      return storedLang;
+    }
+  } catch (error) {
+    console.warn('Language preference unavailable:', error);
+  }
+
+  preferredLang = (navigator.language || 'pt').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+  return preferredLang;
+}
+
+function persistLangPreference(nextLang) {
+  try {
+    localStorage.setItem(LANG_STORAGE_KEY, nextLang);
+  } catch (error) {
+    console.warn('Could not persist language preference:', error);
+  }
+}
+
+function toggleLanguage() {
+  preferredLang = detectPreferredLang() === 'pt' ? 'en' : 'pt';
+  persistLangPreference(preferredLang);
+  applyLang();
+}
+
+function exitGame() {
+  if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'exit-app' }));
+    return;
+  }
+  window.close();
+}
 
 function applyLang() {
-  lang = (navigator.language || 'pt').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+  lang = detectPreferredLang();
   document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
   const S = STRINGS[lang];
 
@@ -981,6 +1078,9 @@ function applyLang() {
   document.getElementById('btn-resume').textContent  = S.btnResume;
   document.getElementById('btn-restart').textContent = S.btnRestart;
   document.getElementById('btn-start').textContent   = S.btnStart;
+  document.getElementById('btn-high-scores').textContent = S.btnHighScores;
+  document.getElementById('btn-language').textContent = S.btnLanguage;
+  document.getElementById('btn-exit').textContent    = S.btnExit;
   document.getElementById('btn-about').textContent   = S.btnAbout;
 
   // Sobre
@@ -1002,6 +1102,7 @@ function applyLang() {
 
   // Topbar
   document.getElementById('btn-restart-game').textContent = S.btnRestartGame;
+  document.getElementById('btn-menu').textContent = S.btnMenu;
 }
 
 
@@ -2347,9 +2448,9 @@ function showPanel(ac) {
 
   const deg=Math.round(((ac.hdg*180/Math.PI)+90+360)%360);
   const opts=[
-    [`◀ ESQUERDA 30°`,          ac.hdg-Math.PI/6],
-    [`▶ DIREITA 30°`,           ac.hdg+Math.PI/6],
-    [`↺ REVERSO 180°`,          ac.hdg+Math.PI],
+    [STRINGS[lang].panelLeft,    ac.hdg-Math.PI/6],
+    [STRINGS[lang].panelRight,   ac.hdg+Math.PI/6],
+    [STRINGS[lang].panelReverse, ac.hdg+Math.PI],
   ];
   const flOpts=[];
   if (ac.fl < FL_MAX) {

@@ -24,6 +24,17 @@
       "package": "com.campagner.atcradarsbvt",
       "versionCode": 8
     },
+    "androidNavigationBar": {
+      "visible": "immersive",
+      "backgroundColor": "#040a06",
+      "barStyle": "light-content"
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#040a06",
+      "barStyle": "light-content",
+      "hidden": true,
+      "translucent": true
+    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
