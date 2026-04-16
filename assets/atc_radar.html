@@ -514,7 +514,7 @@ body::before {
   margin-bottom: 24px;
   letter-spacing: 2px;
 }
-#start-screen .instructions {
+#tips-screen .instructions {
   text-align: justify;
   text-justify: inter-word;
   font-size: 9px;
@@ -522,11 +522,11 @@ body::before {
   margin: 17px 0;
   line-height: 1.6;
 }
-#start-screen .instructions div {
+#tips-screen .instructions div {
   margin-bottom: 7px;
   padding-left: 8px;
 }
-#start-screen .instructions span {
+#tips-screen .instructions span {
   color: var(--green);
 }
 #start-screen button {
@@ -658,6 +658,53 @@ body::before {
 }
 #about-overlay.hidden { display:none; }
 
+/* ── MODAL DICAS ── */
+#tips-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95);
+  display: flex; align-items:center; justify-content:center;
+  z-index: 601;
+}
+#tips-screen {
+  background: var(--panel);
+  border: 3px solid var(--amber);
+  box-shadow: 0 0 50px rgba(255,170,0,0.35);
+  padding: 34px 30px;
+  text-align: left;
+  min-width: 280px;
+  max-width: 460px;
+  width: 92vw;
+}
+#tips-screen h2 {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  color: var(--amber);
+  text-shadow: 0 0 20px var(--amber);
+  margin-bottom: 14px;
+  letter-spacing: 3px;
+  text-align: center;
+}
+#tips-screen button {
+  background: transparent;
+  border: 2px solid var(--green);
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: 100%;
+  text-shadow: 0 0 8px var(--green);
+  margin-top: 12px;
+}
+#tips-screen button:active {
+  background: var(--green);
+  color:#000;
+  text-shadow: none;
+}
+#tips-overlay.hidden { display:none; }
+
 /* ── MODAL HIGH SCORES ── */
 #high-scores-overlay {
   position: fixed; inset: 0;
@@ -787,6 +834,176 @@ body::before {
   color:#000; 
   text-shadow: none;
 }
+
+/* ── TUTORIAL INTERATIVO ── */
+#tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 760;
+  pointer-events: none;
+}
+#tutorial-overlay.hidden { display: none; }
+#tutorial-highlight {
+  position: fixed;
+  border: 2px solid var(--amber);
+  border-radius: 10px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.52), 0 0 16px rgba(255,170,0,0.55);
+  background: rgba(255,170,0,0.06);
+  pointer-events: none;
+  transition: all 0.22s ease;
+}
+#tutorial-highlight-2,
+#tutorial-highlight-3 {
+  position: fixed;
+  border: 2px solid rgba(255,170,0,0.92);
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(255,170,0,0.45);
+  background: rgba(255,170,0,0.04);
+  pointer-events: none;
+  transition: all 0.22s ease;
+}
+#tutorial-highlight-2.hidden,
+#tutorial-highlight-3.hidden {
+  display: none;
+}
+#tutorial-card {
+  position: fixed;
+  left: 50%;
+  bottom: calc(98px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(92vw, 420px);
+  background: rgba(15, 15, 15, 0.97);
+  border: 2px solid var(--amber);
+  box-shadow: 0 0 22px rgba(255,170,0,0.35);
+  padding: 14px;
+  pointer-events: auto;
+  touch-action: none;
+  z-index: 761;
+}
+#tutorial-header {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  padding-top: 10px;
+}
+#tutorial-header.dragging {
+  cursor: grabbing;
+}
+#tutorial-header::before {
+  content: '';
+  display: block;
+  width: 52px;
+  height: 5px;
+  margin: 0 auto 10px;
+  border-radius: 999px;
+  background: rgba(255,170,0,0.7);
+  box-shadow: 0 0 10px rgba(255,170,0,0.28);
+}
+#tutorial-drag-hint {
+  text-align: center;
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: rgba(255, 170, 0, 0.9);
+  text-shadow: 0 0 6px rgba(255,170,0,0.35);
+  margin-bottom: 6px;
+}
+#tutorial-step-count {
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+#tutorial-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  color: var(--amber);
+  text-shadow: 0 0 8px rgba(255,170,0,0.45);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+#tutorial-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--text);
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+#tutorial-card .tutorial-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+#tutorial-card button {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--green);
+  font-family: 'Orbitron', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 9px 8px;
+  cursor: pointer;
+}
+#tutorial-card button:active {
+  background: var(--green);
+  color: #000;
+}
+#tutorial-card button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  border-color: var(--border) !important;
+  color: var(--dim) !important;
+}
+#tutorial-complete-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 790;
+}
+#tutorial-complete-overlay.hidden { display: none; }
+#tutorial-complete-modal {
+  width: min(88vw, 360px);
+  background: rgba(15, 15, 15, 0.97);
+  border: 2px solid var(--amber);
+  box-shadow: 0 0 22px rgba(255,170,0,0.35);
+  padding: 18px 16px;
+  text-align: center;
+}
+#tutorial-complete-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  color: var(--amber);
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(255,170,0,0.4);
+  margin-bottom: 12px;
+}
+#btn-tutorial-complete-close {
+  width: 100%;
+  border: 2px solid var(--amber);
+  background: transparent;
+  color: var(--amber);
+  font-family: 'Orbitron', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 9px 10px;
+  cursor: pointer;
+}
+#btn-tutorial-complete-close:active {
+  background: var(--amber);
+  color: #000;
+}
+#btn-tutorial-skip {
+  border-color: var(--red);
+  color: #ffb2b2;
+}
+#btn-tutorial-next {
+  border-color: var(--amber);
+  color: var(--amber);
+}
 #high-scores-overlay.hidden { display:none; }
 #start-overlay.hidden { display:none; }
 </style>
@@ -859,16 +1076,11 @@ body::before {
   <div id="start-screen">
     <h1>ATC RADAR</h1>
     <div class="subtitle">CONTROLE DE TRÁFEGO AÉREO</div>
-    <div class="instructions">
-      <div><span>▸</span> Clique nas pistas ou nas strips para selecionar</div>
-      <div><span>▸</span> Altere proa, nível e velocidade</div>
-      <div><span>▸</span> Arraste as etiquetas para reposicionar</div>
-      <div><span>▸</span> Mantenha a separação lateral ou garanta FL (nível de voo - altitude) diferente</div>
-      <div><span>▸</span> Evite ingresso em espaços aéreos condicionados, independente do FL (nível de voo - altitude)</div>
-    </div>
     <button id="btn-resume" onclick="resumeGame()" style="margin-bottom:10px; display:none">【 VOLTAR AO JOGO 】</button>
     <button id="btn-restart" onclick="restartFromMenu()" style="margin-bottom:10px; display:none">【 REINICIAR 】</button>
     <button id="btn-start" onclick="startGame()" style="margin-bottom:10px">【 INICIAR JOGO 】</button>
+    <button id="btn-tutorial" onclick="startInteractiveTutorial()" style="margin-bottom:10px">【 TUTORIAL INTERATIVO 】</button>
+    <button id="btn-tips" onclick="openTips()" style="margin-bottom:10px">【 DICAS 】</button>
     <button id="btn-high-scores" onclick="openHighScores()" style="margin-bottom:10px">【 HIGH SCORES 】</button>
     <button id="btn-about" onclick="openAbout()">【 SOBRE 】</button>
     <div class="start-footer">
@@ -880,7 +1092,7 @@ body::before {
 <div id="about-overlay" class="hidden">
   <div id="about-screen">
     <h2 id="about-title">SOBRE</h2>
-    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.3 (teste fechado)</div>
+    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.4 (teste fechado)</div>
     <div class="about-content">
       <div id="about-dev"><strong>Desenvolvimento</strong></div>
       <div>ATC RADAR SBVT</div>
@@ -891,6 +1103,19 @@ body::before {
     <button id="btn-about-back" onclick="closeAbout()">【 VOLTAR 】</button>
   </div>
 </div>
+<div id="tips-overlay" class="hidden">
+  <div id="tips-screen">
+    <h2 id="tips-title">DICAS</h2>
+    <div class="instructions">
+      <div><span>▸</span> Clique nas pistas ou nas strips para selecionar</div>
+      <div><span>▸</span> Altere proa, nível e velocidade</div>
+      <div><span>▸</span> Arraste as etiquetas para reposicionar</div>
+      <div><span>▸</span> Mantenha a separação lateral ou garanta FL (nível de voo - altitude) diferente</div>
+      <div><span>▸</span> Evite ingresso em espaços aéreos condicionados, independente do FL (nível de voo - altitude)</div>
+    </div>
+    <button id="btn-tips-back" onclick="closeTips()">【 VOLTAR 】</button>
+  </div>
+</div>
 <div id="high-scores-overlay" class="hidden">
   <div id="high-scores-screen">
     <h2>TOP 10 SCORES</h2>
@@ -898,6 +1123,30 @@ body::before {
     <div id="scores-loading"><div class="scores-spinner"></div></div>
     <div id="scores-list"></div>
     <button id="btn-scores-back" onclick="closeHighScores()">【 VOLTAR 】</button>
+  </div>
+</div>
+<div id="tutorial-overlay" class="hidden">
+  <div id="tutorial-highlight"></div>
+  <div id="tutorial-highlight-2" class="hidden"></div>
+  <div id="tutorial-highlight-3" class="hidden"></div>
+  <div id="tutorial-card">
+    <div id="tutorial-header" onpointerdown="handleTutorialCardPointerDown(event)" onmousedown="handleTutorialCardMouseDown(event)" ontouchstart="handleTutorialCardTouchStart(event)">
+      <div id="tutorial-drag-hint">ARRASTE</div>
+      <div id="tutorial-step-count">1/5</div>
+      <h3 id="tutorial-title">TUTORIAL</h3>
+    </div>
+    <p id="tutorial-text"></p>
+    <div class="tutorial-actions">
+      <button id="btn-tutorial-prev" onclick="previousInteractiveTutorialStep()">ANTERIOR</button>
+      <button id="btn-tutorial-skip" onclick="skipInteractiveTutorial()">PULAR</button>
+      <button id="btn-tutorial-next" onclick="nextInteractiveTutorialStep()">PRÓXIMO</button>
+    </div>
+  </div>
+</div>
+<div id="tutorial-complete-overlay" class="hidden">
+  <div id="tutorial-complete-modal">
+    <div id="tutorial-complete-title">TUTORIAL CONCLUÍDO</div>
+    <button id="btn-tutorial-complete-close" onclick="closeTutorialCompletedModal()">FECHAR</button>
   </div>
 </div>
 <script>
@@ -923,12 +1172,15 @@ const STRINGS = {
     btnResume:     '【 VOLTAR AO JOGO 】',
     btnRestart:    '【 REINICIAR 】',
     btnStart:      '【 INICIAR JOGO 】',
+    btnTutorial:   '【 TUTORIAL INTERATIVO 】',
+    btnTips:       '【 DICAS 】',
     btnHighScores: '【 HIGH SCORES 】',
     btnLanguage:   '【 🇧🇷 PT | 🇺🇸 EN 】',
     btnExit:       'SAIR DO JOGO',
     btnAbout:      '【 SOBRE 】',
     btnMenu:       'MENU',
     btnBack:       '【 VOLTAR 】',
+    tipsTitle:     'DICAS',
     aboutTitle:    'SOBRE',
     aboutDev:      'Desenvolvimento',
     aboutPM:       'Gestor do Projeto',
@@ -963,6 +1215,47 @@ const STRINGS = {
     panelSpeedUp:  (gs) => `➕ ACELERAR ${gs}KT`,
     panelSlowDown: (gs) => `➖ REDUZIR ${gs}KT`,
     panelCancel:   'CANCELAR',
+    tutorial: {
+      dragHint: 'ARRASTE',
+      completeTitle: 'TUTORIAL CONCLUÍDO',
+      completeClose: 'FECHAR',
+      prev: 'PASSO ANTERIOR',
+      skip: 'PULAR TUTORIAL',
+      next: 'PRÓXIMO PASSO',
+      done: 'FINALIZAR',
+      lockedNext: 'AGUARDE A AÇÃO',
+      steps: [
+        {
+          target: '#radar-wrap',
+          title: 'Radar Principal',
+          text: 'Aqui você acompanha todas as aeronaves no setor. O vetor de cada uma mostra a direção atual de voo.'
+        },
+        {
+          target: '.strip.selected, .strip, #strips, #strips-bar',
+          targets: ['.strip.selected, .strip, #strips, #strips-bar', '@tutorialAircraft', '#redirect-panel:not(.hidden)'],
+          title: 'Flight Strips',
+          text: 'Toque em uma strip ou diretamente nas cruzes (aeronaves) no radar para selecionar e abrir os comandos de controle. Se necessário, arraste a etiqueta.',
+          requireAction: 'selectAircraft'
+        },
+        {
+          target: '#redirect-panel:not(.hidden), #radar-wrap',
+          title: 'Painel de Controle',
+          text: 'Após selecionar uma aeronave, ajuste proa, nível ou velocidade para evitar conflitos e organizar o fluxo.',
+          requireAction: 'issueCommand'
+        },
+        {
+          target: '#score-display',
+          title: 'Score e Nível',
+          text: 'Seu score sobe conforme você mantém o tráfego seguro. A cada nível o cenário fica mais desafiador.'
+        },
+        {
+          target: '#btn-menu',
+          title: 'Pausar e Menu',
+          text: 'Use MENU para pausar, reiniciar ou voltar depois. Toque em MENU agora.',
+          requireAction: 'openMenu'
+        }
+      ]
+    },
   },
   en: {
     subtitle:      'AIR TRAFFIC CONTROL',
@@ -976,12 +1269,15 @@ const STRINGS = {
     btnResume:     '【 BACK TO GAME 】',
     btnRestart:    '【 RESTART 】',
     btnStart:      '【 START GAME 】',
+    btnTutorial:   '【 INTERACTIVE TUTORIAL 】',
+    btnTips:       '【 TIPS 】',
     btnHighScores: '【 HIGH SCORES 】',
     btnLanguage:   '【 🇧🇷 PT | 🇺🇸 EN 】',
     btnExit:       'EXIT GAME',
     btnAbout:      '【 ABOUT 】',
     btnMenu:       'MENU',
     btnBack:       '【 BACK 】',
+    tipsTitle:     'TIPS',
     aboutTitle:    'ABOUT',
     aboutDev:      'Development',
     aboutPM:       'Project Manager',
@@ -1016,12 +1312,71 @@ const STRINGS = {
     panelSpeedUp:  (gs) => `➕ SPEED UP ${gs}KT`,
     panelSlowDown: (gs) => `➖ SLOW DOWN ${gs}KT`,
     panelCancel:   'CANCEL',
+    tutorial: {
+      dragHint: 'DRAG',
+      completeTitle: 'TUTORIAL COMPLETED',
+      completeClose: 'CLOSE',
+      prev: 'PREVIOUS STEP',
+      skip: 'SKIP TUTORIAL',
+      next: 'NEXT STEP',
+      done: 'FINISH',
+      lockedNext: 'WAIT FOR ACTION',
+      steps: [
+        {
+          target: '#radar-wrap',
+          title: 'Main Radar',
+          text: 'Track all aircraft in your sector here. Each vector indicates the current aircraft heading.'
+        },
+        {
+          target: '.strip.selected, .strip, #strips, #strips-bar',
+          targets: ['.strip.selected, .strip, #strips, #strips-bar', '@tutorialAircraft', '#redirect-panel:not(.hidden)'],
+          title: 'Flight Strips',
+          text: 'Tap a strip or directly an aircraft cross on the radar to select traffic and open control actions. If needed, drag the label.',
+          requireAction: 'selectAircraft'
+        },
+        {
+          target: '#redirect-panel:not(.hidden), #radar-wrap',
+          title: 'Control Panel',
+          text: 'After selecting an aircraft, adjust heading, flight level, or speed to prevent conflicts.',
+          requireAction: 'issueCommand'
+        },
+        {
+          target: '#score-display',
+          title: 'Score and Level',
+          text: 'Your score grows as you keep traffic safe. Higher levels increase complexity and pressure.'
+        },
+        {
+          target: '#btn-menu',
+          title: 'Pause and Menu',
+          text: 'Use MENU to pause, restart, or return later. Tap MENU now.',
+          requireAction: 'openMenu'
+        }
+      ]
+    },
   }
 };
 
 const LANG_STORAGE_KEY = 'atc-radar-language';
+const TUTORIAL_STORAGE_KEY = 'atc-radar-tutorial-completed';
 let lang = 'pt';
 let preferredLang = null;
+let tutorialActive = false;
+let tutorialStepIndex = 0;
+let tutorialHighlightRafId = null;
+let tutorialFocusAircraftId = null;
+let tutorialCardDrag = {
+  dragging: false,
+  pointerId: null,
+  startPointerX: 0,
+  startPointerY: 0,
+  startLeft: 0,
+  startTop: 0,
+};
+let tutorialActions = {
+  selectAircraft: false,
+  issueCommand: false,
+  openMenu: false,
+};
 
 function detectPreferredLang() {
   if (preferredLang === 'pt' || preferredLang === 'en') {
@@ -1078,10 +1433,16 @@ function applyLang() {
   document.getElementById('btn-resume').textContent  = S.btnResume;
   document.getElementById('btn-restart').textContent = S.btnRestart;
   document.getElementById('btn-start').textContent   = S.btnStart;
+  document.getElementById('btn-tutorial').textContent = S.btnTutorial;
+  document.getElementById('btn-tips').textContent = S.btnTips;
   document.getElementById('btn-high-scores').textContent = S.btnHighScores;
   document.getElementById('btn-language').textContent = S.btnLanguage;
   document.getElementById('btn-exit').textContent    = S.btnExit;
   document.getElementById('btn-about').textContent   = S.btnAbout;
+
+  // Dicas
+  document.getElementById('tips-title').textContent = S.tipsTitle;
+  document.getElementById('btn-tips-back').textContent = S.btnBack;
 
   // Sobre
   document.getElementById('about-title').textContent = S.aboutTitle;
@@ -1103,6 +1464,446 @@ function applyLang() {
   // Topbar
   document.getElementById('btn-restart-game').textContent = S.btnRestartGame;
   document.getElementById('btn-menu').textContent = S.btnMenu;
+
+  if (tutorialActive) {
+    renderTutorialStep();
+  }
+}
+
+function hasCompletedTutorial() {
+  try {
+    return localStorage.getItem(TUTORIAL_STORAGE_KEY) === '1';
+  } catch (error) {
+    console.warn('Tutorial completion check unavailable:', error);
+    return false;
+  }
+}
+
+function persistTutorialCompleted() {
+  try {
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, '1');
+  } catch (error) {
+    console.warn('Could not persist tutorial completion:', error);
+  }
+}
+
+function getTutorialSteps() {
+  return STRINGS[lang].tutorial.steps;
+}
+
+function resetTutorialActions() {
+  tutorialActions = {
+    selectAircraft: false,
+    issueCommand: false,
+    openMenu: false,
+  };
+}
+
+function isTutorialStepUnlocked(step) {
+  if (!step || !step.requireAction) return true;
+  return Boolean(tutorialActions[step.requireAction]);
+}
+
+function markTutorialAction(actionName) {
+  if (!tutorialActive || !actionName) return;
+  if (!(actionName in tutorialActions)) return;
+  tutorialActions[actionName] = true;
+
+  const steps = getTutorialSteps();
+  const isLastStep = tutorialStepIndex === steps.length - 1;
+  if (actionName === 'openMenu' && isLastStep) {
+    showTutorialCompletedModal();
+    return;
+  }
+
+  renderTutorialStep();
+}
+
+function hideTutorialCompletedModal() {
+  const overlay = document.getElementById('tutorial-complete-overlay');
+  if (overlay) overlay.classList.add('hidden');
+}
+
+function showTutorialCompletedModal() {
+  const overlay = document.getElementById('tutorial-complete-overlay');
+  const title = document.getElementById('tutorial-complete-title');
+  const closeBtn = document.getElementById('btn-tutorial-complete-close');
+  if (!overlay || !title || !closeBtn) return;
+  const S = STRINGS[lang].tutorial;
+  title.textContent = S.completeTitle;
+  closeBtn.textContent = S.completeClose;
+  overlay.classList.remove('hidden');
+}
+
+function closeTutorialCompletedModal() {
+  hideTutorialCompletedModal();
+  closeInteractiveTutorial(true);
+}
+
+function getTutorialFocusAircraft() {
+  if (selectedAC) return selectedAC;
+  if (!tutorialFocusAircraftId) return null;
+  return aircraft.find(ac => ac.id === tutorialFocusAircraftId) || null;
+}
+
+function resolveTutorialTarget(step) {
+  if (!step || !step.target) return null;
+  try {
+    return document.querySelector(step.target);
+  } catch (error) {
+    console.warn('Invalid tutorial selector:', step.target, error);
+    return null;
+  }
+}
+
+function getSelectedAircraftHighlightRect() {
+  const highlightedAircraft = getTutorialFocusAircraft();
+  if (!highlightedAircraft || !canvas) return null;
+  const rect = canvas.getBoundingClientRect();
+  const size = 34;
+  return {
+    left: rect.left + highlightedAircraft.x - size / 2,
+    top: rect.top + highlightedAircraft.y - size / 2,
+    width: size,
+    height: size,
+  };
+}
+
+function getTutorialHighlightRects(step) {
+  if (!step) return [];
+
+  const sources = Array.isArray(step.targets) && step.targets.length > 0
+    ? step.targets
+    : (step.target ? [step.target] : []);
+
+  const rects = [];
+  for (const source of sources) {
+    if (source === '@selectedAircraft' || source === '@tutorialAircraft') {
+      const aircraftRect = getSelectedAircraftHighlightRect();
+      if (aircraftRect) rects.push(aircraftRect);
+      continue;
+    }
+
+    try {
+      const element = document.querySelector(source);
+      if (!element) continue;
+      const elementRect = element.getBoundingClientRect();
+      rects.push({
+        left: elementRect.left,
+        top: elementRect.top,
+        width: elementRect.width,
+        height: elementRect.height,
+      });
+    } catch (error) {
+      console.warn('Invalid tutorial selector:', source, error);
+    }
+  }
+
+  return rects;
+}
+
+function applyTutorialHighlightBox(element, rect, withMask = false) {
+  if (!element || !rect) return;
+  const pad = 8;
+  const left = Math.max(4, rect.left - pad);
+  const top = Math.max(4, rect.top - pad);
+  const width = Math.max(30, rect.width + pad * 2);
+  const height = Math.max(30, rect.height + pad * 2);
+
+  element.classList.remove('hidden');
+  element.style.transform = 'none';
+  element.style.left = `${left}px`;
+  element.style.top = `${top}px`;
+  element.style.width = `${width}px`;
+  element.style.height = `${height}px`;
+  if (withMask) {
+    element.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.52), 0 0 16px rgba(255,170,0,0.55)';
+  } else {
+    element.style.boxShadow = '0 0 16px rgba(255,170,0,0.55)';
+  }
+}
+
+function hideTutorialSecondaryHighlights() {
+  const secondaryIds = ['tutorial-highlight-2', 'tutorial-highlight-3'];
+  secondaryIds.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) element.classList.add('hidden');
+  });
+}
+
+function resetTutorialCardPosition() {
+  const card = document.getElementById('tutorial-card');
+  if (!card) return;
+  card.style.left = '50%';
+  card.style.top = '';
+  card.style.bottom = 'calc(98px + env(safe-area-inset-bottom, 0px))';
+  card.style.transform = 'translateX(-50%)';
+}
+
+function moveTutorialCard(clientX, clientY) {
+  const card = document.getElementById('tutorial-card');
+  if (!card) return;
+
+  const margin = 8;
+  const maxLeft = Math.max(margin, window.innerWidth - card.offsetWidth - margin);
+  const maxTop = Math.max(margin, window.innerHeight - card.offsetHeight - margin);
+  const deltaX = clientX - tutorialCardDrag.startPointerX;
+  const deltaY = clientY - tutorialCardDrag.startPointerY;
+  const nextLeft = Math.max(margin, Math.min(maxLeft, tutorialCardDrag.startLeft + deltaX));
+  const nextTop = Math.max(margin, Math.min(maxTop, tutorialCardDrag.startTop + deltaY));
+
+  card.style.left = `${nextLeft}px`;
+  card.style.top = `${nextTop}px`;
+  card.style.bottom = 'auto';
+  card.style.transform = 'none';
+}
+
+function handleTutorialCardPointerMove(event) {
+  if (!tutorialCardDrag.dragging) return;
+  event.preventDefault();
+  moveTutorialCard(event.clientX, event.clientY);
+}
+
+function stopTutorialCardDrag(event) {
+  if (!tutorialCardDrag.dragging) return;
+  tutorialCardDrag.dragging = false;
+  const header = document.getElementById('tutorial-header');
+  if (header) {
+    header.classList.remove('dragging');
+    if (tutorialCardDrag.pointerId !== null && header.hasPointerCapture && header.hasPointerCapture(tutorialCardDrag.pointerId)) {
+      header.releasePointerCapture(tutorialCardDrag.pointerId);
+    }
+  }
+  tutorialCardDrag.pointerId = null;
+}
+
+function handleTutorialCardMouseMove(event) {
+  if (!tutorialCardDrag.dragging) return;
+  moveTutorialCard(event.clientX, event.clientY);
+}
+
+function handleTutorialCardTouchMove(event) {
+  if (!tutorialCardDrag.dragging) return;
+  const touch = event.touches && event.touches[0];
+  if (!touch) return;
+  event.preventDefault();
+  moveTutorialCard(touch.clientX, touch.clientY);
+}
+
+function handleTutorialCardTouchEnd() {
+  stopTutorialCardDrag();
+}
+
+function beginTutorialCardDrag(clientX, clientY, pointerId = null) {
+  const card = document.getElementById('tutorial-card');
+  const header = document.getElementById('tutorial-header');
+  if (!card || !header) return;
+
+  const rect = card.getBoundingClientRect();
+  card.style.left = `${rect.left}px`;
+  card.style.top = `${rect.top}px`;
+  card.style.bottom = 'auto';
+  card.style.transform = 'none';
+  tutorialCardDrag.dragging = true;
+  tutorialCardDrag.pointerId = pointerId;
+  tutorialCardDrag.startPointerX = clientX;
+  tutorialCardDrag.startPointerY = clientY;
+  tutorialCardDrag.startLeft = rect.left;
+  tutorialCardDrag.startTop = rect.top;
+  header.classList.add('dragging');
+}
+
+function handleTutorialCardPointerDown(event) {
+  event.preventDefault();
+  const header = document.getElementById('tutorial-header');
+  beginTutorialCardDrag(event.clientX, event.clientY, event.pointerId ?? null);
+  if (header.setPointerCapture && event.pointerId !== undefined) {
+    header.setPointerCapture(event.pointerId);
+  }
+}
+
+function handleTutorialCardMouseDown(event) {
+  event.preventDefault();
+  beginTutorialCardDrag(event.clientX, event.clientY, null);
+}
+
+function handleTutorialCardTouchStart(event) {
+  const touch = event.touches && event.touches[0];
+  if (!touch) return;
+  event.preventDefault();
+  beginTutorialCardDrag(touch.clientX, touch.clientY, null);
+}
+
+function ensureTutorialTrafficReady() {
+  if (!tutorialActive) return;
+  if (aircraft.length === 0) {
+    const spawned = spawnAC();
+    if (spawned) {
+      updateSidebar();
+    }
+  }
+  if (!tutorialFocusAircraftId && aircraft.length > 0) {
+    tutorialFocusAircraftId = aircraft[0].id;
+  }
+}
+
+function startTutorialHighlightLoop() {
+  if (tutorialHighlightRafId !== null) {
+    cancelAnimationFrame(tutorialHighlightRafId);
+    tutorialHighlightRafId = null;
+  }
+
+  const tick = () => {
+    if (!tutorialActive) return;
+    positionTutorialHighlight();
+    tutorialHighlightRafId = requestAnimationFrame(tick);
+  };
+
+  tutorialHighlightRafId = requestAnimationFrame(tick);
+}
+
+function stopTutorialHighlightLoop() {
+  if (tutorialHighlightRafId !== null) {
+    cancelAnimationFrame(tutorialHighlightRafId);
+    tutorialHighlightRafId = null;
+  }
+}
+
+function positionTutorialHighlight() {
+  if (!tutorialActive) return;
+  const highlight = document.getElementById('tutorial-highlight');
+  const highlight2 = document.getElementById('tutorial-highlight-2');
+  const highlight3 = document.getElementById('tutorial-highlight-3');
+  const steps = getTutorialSteps();
+  const step = steps[tutorialStepIndex];
+  if (!highlight || !step) return;
+
+  const rects = getTutorialHighlightRects(step);
+  if (rects.length === 0) {
+    hideTutorialSecondaryHighlights();
+    highlight.classList.remove('hidden');
+    highlight.style.left = '50%';
+    highlight.style.top = '50%';
+    highlight.style.width = '220px';
+    highlight.style.height = '90px';
+    highlight.style.transform = 'translate(-50%, -50%)';
+    return;
+  }
+
+  const shouldUseMask = rects.length === 1;
+  applyTutorialHighlightBox(highlight, rects[0], shouldUseMask);
+  if (highlight2) {
+    if (rects[1]) applyTutorialHighlightBox(highlight2, rects[1], false);
+    else highlight2.classList.add('hidden');
+  }
+  if (highlight3) {
+    if (rects[2]) applyTutorialHighlightBox(highlight3, rects[2], false);
+    else highlight3.classList.add('hidden');
+  }
+}
+
+function renderTutorialStep() {
+  if (!tutorialActive) return;
+  const steps = getTutorialSteps();
+  const step = steps[tutorialStepIndex];
+  if (!step) return;
+
+  const stepCounter = document.getElementById('tutorial-step-count');
+  const title = document.getElementById('tutorial-title');
+  const text = document.getElementById('tutorial-text');
+  const dragHint = document.getElementById('tutorial-drag-hint');
+  const prevBtn = document.getElementById('btn-tutorial-prev');
+  const skipBtn = document.getElementById('btn-tutorial-skip');
+  const nextBtn = document.getElementById('btn-tutorial-next');
+  if (!stepCounter || !title || !text || !dragHint || !prevBtn || !skipBtn || !nextBtn) return;
+
+  stepCounter.textContent = `${tutorialStepIndex + 1}/${steps.length}`;
+  title.textContent = step.title;
+  text.textContent = step.text;
+  dragHint.textContent = STRINGS[lang].tutorial.dragHint;
+  prevBtn.textContent = STRINGS[lang].tutorial.prev;
+  prevBtn.disabled = tutorialStepIndex === 0;
+  skipBtn.textContent = STRINGS[lang].tutorial.skip;
+  const unlocked = isTutorialStepUnlocked(step);
+  nextBtn.disabled = !unlocked;
+  if (!unlocked) {
+    nextBtn.textContent = STRINGS[lang].tutorial.lockedNext;
+  } else {
+    nextBtn.textContent = tutorialStepIndex === steps.length - 1
+      ? STRINGS[lang].tutorial.done
+      : STRINGS[lang].tutorial.next;
+  }
+
+  positionTutorialHighlight();
+}
+
+function closeInteractiveTutorial(markCompleted = false) {
+  tutorialActive = false;
+  tutorialFocusAircraftId = null;
+  stopTutorialCardDrag();
+  resetTutorialCardPosition();
+  hideTutorialCompletedModal();
+  stopTutorialHighlightLoop();
+  const overlay = document.getElementById('tutorial-overlay');
+  if (overlay) overlay.classList.add('hidden');
+  hideTutorialSecondaryHighlights();
+  window.removeEventListener('resize', positionTutorialHighlight);
+  if (markCompleted) {
+    persistTutorialCompleted();
+  }
+}
+
+function startInteractiveTutorial() {
+  if (!gameStarted) {
+    gameStarted = true;
+    loadHighScore();
+    flushPendingScoresQueue();
+    refreshTopScoresFromCloud();
+  }
+
+  gamePaused = false;
+  document.getElementById('start-overlay').classList.add('hidden');
+  document.getElementById('btn-resume').style.display = 'none';
+  document.getElementById('btn-restart').style.display = 'none';
+  document.getElementById('btn-start').style.display = 'block';
+  restartGame();
+
+  tutorialActive = true;
+  hideTutorialCompletedModal();
+  tutorialStepIndex = 0;
+  resetTutorialActions();
+  resetTutorialCardPosition();
+  ensureTutorialTrafficReady();
+  const overlay = document.getElementById('tutorial-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('hidden');
+  renderTutorialStep();
+  startTutorialHighlightLoop();
+  window.addEventListener('resize', positionTutorialHighlight);
+}
+
+function nextInteractiveTutorialStep() {
+  if (!tutorialActive) return;
+  const steps = getTutorialSteps();
+  const step = steps[tutorialStepIndex];
+  if (!isTutorialStepUnlocked(step)) return;
+  if (tutorialStepIndex >= steps.length - 1) {
+    closeInteractiveTutorial(true);
+    return;
+  }
+  tutorialStepIndex += 1;
+  renderTutorialStep();
+}
+
+function previousInteractiveTutorialStep() {
+  if (!tutorialActive) return;
+  if (tutorialStepIndex <= 0) return;
+  tutorialStepIndex -= 1;
+  renderTutorialStep();
+}
+
+function skipInteractiveTutorial() {
+  closeInteractiveTutorial(true);
 }
 
 
@@ -2432,6 +3233,7 @@ function updateScoreUI() {
 function selectAC(ac) {
   if (selectedAC && selectedAC.id===ac.id) { selectedAC=null; hidePanel(); return; }
   selectedAC=ac;
+  markTutorialAction('selectAircraft');
   showPanel(ac);
 }
 
@@ -2487,6 +3289,7 @@ function hidePanel() {
 
 function doRedirect(hdg) {
   if (!selectedAC) return;
+  markTutorialAction('issueCommand');
   selectedAC.targetHdg=hdg;
   selectedAC.separated=true;
   score+=15; updateScoreUI();
@@ -2497,6 +3300,7 @@ function doRedirect(hdg) {
 
 function doChangeLevel(fl) {
   if (!selectedAC) return;
+  markTutorialAction('issueCommand');
   selectedAC.fl=fl;
   selectedAC.separated=true;
   score+=10; updateScoreUI();
@@ -2507,6 +3311,7 @@ function doChangeLevel(fl) {
 
 function doChangeSpeed(gs) {
   if (!selectedAC) return;
+  markTutorialAction('issueCommand');
   selectedAC.gs=gs;
   // Recalcula a velocidade em pixels/frame baseado no novo gs (+15% na velocidade geral)
   selectedAC.speed = gs * 0.00039204 * GAME_SPEED_MULT;
@@ -2621,6 +3426,7 @@ function triggerZoneViolationGameOver(ac, area) {
 
 // ── RESTART ───────────────────────────────────
 function goToMenu() {
+  markTutorialAction('openMenu');
   gamePaused = true;
   cancelAnimationFrame(rafId);
   document.getElementById('start-overlay').classList.remove('hidden');
@@ -2683,6 +3489,14 @@ function closeAbout() {
   document.getElementById('about-overlay').classList.add('hidden');
 }
 
+function openTips() {
+  document.getElementById('tips-overlay').classList.remove('hidden');
+}
+
+function closeTips() {
+  document.getElementById('tips-overlay').classList.add('hidden');
+}
+
 function openHighScores() {
   updateHighScoresDisplay();
   setScoresSyncStatus('syncing');
@@ -2714,6 +3528,7 @@ function updateHighScoresDisplay() {
 
 function restartGame() {
   console.log('🔄 restartGame() called, gameStarted =', gameStarted);
+  closeInteractiveTutorial(false);
   aircraft=[]; score=0; level=1; gameOver=false; gamePaused=false;
   pendingCollisionScore = null;
   conditionedAreas = [];
@@ -2777,6 +3592,14 @@ function loop() {
 
 // ── INIT ──────────────────────────────────────
 window.addEventListener('resize',()=>{resize();});
+window.addEventListener('pointermove', handleTutorialCardPointerMove);
+window.addEventListener('pointerup', stopTutorialCardDrag);
+window.addEventListener('pointercancel', stopTutorialCardDrag);
+window.addEventListener('mousemove', handleTutorialCardMouseMove);
+window.addEventListener('mouseup', stopTutorialCardDrag);
+window.addEventListener('touchmove', handleTutorialCardTouchMove, { passive: false });
+window.addEventListener('touchend', handleTutorialCardTouchEnd);
+window.addEventListener('touchcancel', handleTutorialCardTouchEnd);
 window.addEventListener('load',()=>{ 
   console.log('🚀 Window loaded!');
   applyLang();
@@ -2790,6 +3613,16 @@ window.hidePanel=hidePanel;
 window.restartGame=restartGame;
 window.startGame=startGame;
 window.goToMenu=goToMenu;
+window.openTips=openTips;
+window.closeTips=closeTips;
+window.startInteractiveTutorial=startInteractiveTutorial;
+window.closeTutorialCompletedModal=closeTutorialCompletedModal;
+window.handleTutorialCardPointerDown=handleTutorialCardPointerDown;
+window.handleTutorialCardMouseDown=handleTutorialCardMouseDown;
+window.handleTutorialCardTouchStart=handleTutorialCardTouchStart;
+window.previousInteractiveTutorialStep=previousInteractiveTutorialStep;
+window.nextInteractiveTutorialStep=nextInteractiveTutorialStep;
+window.skipInteractiveTutorial=skipInteractiveTutorial;
 </script>
 </body>
 </html>

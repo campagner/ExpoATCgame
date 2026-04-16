@@ -4,7 +4,6 @@ import { WebView } from 'react-native-webview';
 import { Asset } from 'expo-asset';
 import { useEffect, useState } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
-import * as NavigationBar from 'expo-navigation-bar';
 
 export default function App() {
   const [html, setHtml] = useState(null);
@@ -31,19 +30,6 @@ export default function App() {
   }
 
   useEffect(() => {
-    async function configureSystemBars() {
-      if (Platform.OS !== 'android') return;
-
-      try {
-        await NavigationBar.setPositionAsync('absolute');
-        await NavigationBar.setBackgroundColorAsync('#040a06');
-        await NavigationBar.setButtonStyleAsync('light');
-        await NavigationBar.setVisibilityAsync('hidden');
-      } catch (error) {
-        console.warn('Error configuring Android navigation bar:', error);
-      }
-    }
-
     // Carrega o HTML dos assets e injeta como string
     async function load() {
       try {
@@ -60,7 +46,6 @@ export default function App() {
       }
     }
 
-    configureSystemBars();
     load();
   }, [supabaseAnonKey, supabaseUrl]);
 
