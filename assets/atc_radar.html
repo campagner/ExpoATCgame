@@ -11,7 +11,7 @@
   --green:      #cccccc;
   --green-dim:  #aaaaaa;
   --green-dark: #555555;
-  --amber:      #ffcc00;
+  --amber:      #d6d100;
   --red:        #ff3333;
   --cyan:       #bbbbbb;
   --bg:         #3a3a3a;
@@ -311,7 +311,11 @@ body::before {
   color: var(--amber);
   letter-spacing: 1px;
   margin-bottom: 7px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
+#redirect-panel .rp-title.dragging { cursor: grabbing; }
 .rp-btn {
   display: block; width: 100%;
   background: transparent;
@@ -563,6 +567,33 @@ body::before {
   background: transparent;
   color: #7dffb2;
   text-shadow: 0 0 6px #7dffb2;
+}
+#btn-rate {
+  display: inline;
+  width: auto;
+  align-self: center;
+  margin-top: 6px;
+  border: none !important;
+  background: transparent !important;
+  color: rgba(214, 209, 0, 0.42);
+  text-shadow: none;
+  box-shadow: none !important;
+  padding: 0;
+  letter-spacing: 0.4px;
+  font-size: 7px;
+  opacity: 0.58;
+  line-height: 1.1;
+  text-decoration: underline;
+  text-underline-offset: 1px;
+  text-decoration-thickness: 1px;
+}
+#btn-rate:active {
+  border: none !important;
+  background: transparent !important;
+  color: rgba(240, 237, 154, 0.56);
+  text-shadow: none;
+  box-shadow: none !important;
+  opacity: 0.72;
 }
 #btn-exit {
   margin-top: 2px;
@@ -1086,13 +1117,14 @@ body::before {
     <div class="start-footer">
       <button id="btn-language" onclick="toggleLanguage()">【 🇧🇷 PT | 🇺🇸 EN 】</button>
       <button id="btn-exit" onclick="exitGame()">SAIR DO JOGO</button>
+      <button id="btn-rate" onclick="rateApp()">AVALIAR APP</button>
     </div>
   </div>
 </div>
 <div id="about-overlay" class="hidden">
   <div id="about-screen">
     <h2 id="about-title">SOBRE</h2>
-    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.4 (teste fechado)</div>
+    <div style="font-size:10px; color:var(--amber); margin-bottom:20px">v1.5 (teste fechado)</div>
     <div class="about-content">
       <div id="about-dev"><strong>Desenvolvimento</strong></div>
       <div>ATC RADAR SBVT</div>
@@ -1107,7 +1139,7 @@ body::before {
   <div id="tips-screen">
     <h2 id="tips-title">DICAS</h2>
     <div class="instructions">
-      <div><span>▸</span> Clique nas pistas ou nas strips para selecionar</div>
+      <div><span>▸</span> Clique nas pistas, na etiqueta ou nas strips na barra inferior para abrir menu de ações</div>
       <div><span>▸</span> Altere proa, nível e velocidade</div>
       <div><span>▸</span> Arraste as etiquetas para reposicionar</div>
       <div><span>▸</span> Mantenha a separação lateral ou garanta FL (nível de voo - altitude) diferente</div>
@@ -1163,7 +1195,7 @@ const STRINGS = {
   pt: {
     subtitle:      'CONTROLE DE TRÁFEGO AÉREO',
     instr:         [
-      'Clique nas pistas ou nas strips para selecionar',
+      'Clique nas pistas, na etiqueta ou nas strips na barra inferior para abrir menu de ações',
       'Altere proa, nível e velocidade',
       'Arraste as etiquetas para reposicionar',
       'Mantenha a separação lateral ou garanta FL (nível de voo - altitude) diferente',
@@ -1176,6 +1208,7 @@ const STRINGS = {
     btnTips:       '【 DICAS 】',
     btnHighScores: '【 HIGH SCORES 】',
     btnLanguage:   '【 🇧🇷 PT | 🇺🇸 EN 】',
+    btnRate:       'AVALIAR APP',
     btnExit:       'SAIR DO JOGO',
     btnAbout:      '【 SOBRE 】',
     btnMenu:       'MENU',
@@ -1234,7 +1267,7 @@ const STRINGS = {
           target: '.strip.selected, .strip, #strips, #strips-bar',
           targets: ['.strip.selected, .strip, #strips, #strips-bar', '@tutorialAircraft', '#redirect-panel:not(.hidden)'],
           title: 'Flight Strips',
-          text: 'Toque em uma strip ou diretamente nas cruzes (aeronaves) no radar para selecionar e abrir os comandos de controle. Se necessário, arraste a etiqueta.',
+          text: 'Toque em uma strip, diretamente nas cruzes (aeronaves) no radar, ou pressione a etiqueta para selecionar e abrir os comandos de controle. Se necessário, arraste a etiqueta.',
           requireAction: 'selectAircraft'
         },
         {
@@ -1260,7 +1293,7 @@ const STRINGS = {
   en: {
     subtitle:      'AIR TRAFFIC CONTROL',
     instr:         [
-      'Click on aircraft or strips to select',
+      'Click on aircraft, the label, or strips in the bottom bar to open the action menu',
       'Change heading, flight level and speed',
       'Drag labels to reposition them',
       'Maintain lateral separation or ensure different FL (flight level - altitude)',
@@ -1273,6 +1306,7 @@ const STRINGS = {
     btnTips:       '【 TIPS 】',
     btnHighScores: '【 HIGH SCORES 】',
     btnLanguage:   '【 🇧🇷 PT | 🇺🇸 EN 】',
+    btnRate:       'RATE YOUR APP',
     btnExit:       'EXIT GAME',
     btnAbout:      '【 ABOUT 】',
     btnMenu:       'MENU',
@@ -1331,7 +1365,7 @@ const STRINGS = {
           target: '.strip.selected, .strip, #strips, #strips-bar',
           targets: ['.strip.selected, .strip, #strips, #strips-bar', '@tutorialAircraft', '#redirect-panel:not(.hidden)'],
           title: 'Flight Strips',
-          text: 'Tap a strip or directly an aircraft cross on the radar to select traffic and open control actions. If needed, drag the label.',
+          text: 'Tap a strip, directly an aircraft cross on the radar, or press the label to select traffic and open control actions. If needed, drag the label.',
           requireAction: 'selectAircraft'
         },
         {
@@ -1419,6 +1453,14 @@ function exitGame() {
   window.close();
 }
 
+function rateApp() {
+  if (window.ReactNativeWebView && typeof window.ReactNativeWebView.postMessage === 'function') {
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'rate-app' }));
+    return;
+  }
+  window.open('https://play.google.com/store/apps/details?id=com.campagner.atcradarsbvt', '_blank');
+}
+
 function applyLang() {
   lang = detectPreferredLang();
   document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
@@ -1437,6 +1479,7 @@ function applyLang() {
   document.getElementById('btn-tips').textContent = S.btnTips;
   document.getElementById('btn-high-scores').textContent = S.btnHighScores;
   document.getElementById('btn-language').textContent = S.btnLanguage;
+  document.getElementById('btn-rate').textContent    = S.btnRate;
   document.getElementById('btn-exit').textContent    = S.btnExit;
   document.getElementById('btn-about').textContent   = S.btnAbout;
 
@@ -1964,6 +2007,17 @@ let rafId       = null;
 let mapImage    = null;  // Imagem do mapa Vitória
 let draggingLabel = null;  // Aeronave cuja etiqueta está sendo arrastada
 let isDragging    = false;  // Flag de drag ativo
+let labelPressCandidate = null; // Etiqueta pressionada aguardando tap ou drag
+let dragStartPoint = null;      // Ponto inicial do toque/clique na etiqueta
+let panelDrag = {
+  dragging: false,
+  pointerId: null,
+  startPointerX: 0,
+  startPointerY: 0,
+  startLeft: 0,
+  startTop: 0,
+};
+let suppressPanelActionUntil = 0;
 let gameStarted   = false;  // Flag de jogo iniciado
 let gamePaused    = false;  // Flag de jogo pausado
 let pendingCollisionScore = null;
@@ -1972,6 +2026,13 @@ let usedConditionedAreaCodes = new Set();
 let levelAlertTimer = null;
 let areaWarningTimer = null;
 let areaWarningShownForLevel = 0;
+const DEBUG_LOGS = false;
+
+function debugLog(...args) {
+  if (DEBUG_LOGS) {
+    console.log(...args);
+  }
+}
 
 // ── CARREGAR MAPA ──────────────────────────────
 const img = new Image();
@@ -3025,7 +3086,7 @@ function drawAC(ac) {
   const br   = 0.35 + ac.sweepBright*0.65;
   const isSel = selectedAC && selectedAC.id===ac.id;
   const isCon = ac.conflict;
-  const solid = isCon?'#ff4444': isSel?'#ffaa00':'#000000';
+  const solid = isCon?'#ff4444': isSel?'#d0cb00':'#000000';
 
   // Vetor velocidade
   const vlen=36;
@@ -3055,7 +3116,7 @@ function drawAC(ac) {
   // Anel de seleção
   if (isSel) {
     ctx.beginPath(); ctx.arc(ac.x,ac.y,13,0,Math.PI*2);
-    ctx.strokeStyle='rgba(255,170,0,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.strokeStyle='rgba(214,209,0,0.5)'; ctx.lineWidth=1.5; ctx.stroke();
   }
 
   // Símbolo: Cruz dentro de círculo
@@ -3143,7 +3204,7 @@ function drawLabel(ac, isCon, isSel, color, br) {
   const { lx, ly, lw, lh } = getLabelRect(ac);
 
   ctx.fillStyle='rgba(90,90,90,0.35)';
-  ctx.strokeStyle=isCon?'rgba(255,68,68,0.7)': isSel?'rgba(255,170,0,0.7)':'rgba(50,50,50,0.4)';
+  ctx.strokeStyle=isCon?'rgba(255,68,68,0.7)': isSel?'rgba(214,209,0,0.7)':'rgba(50,50,50,0.4)';
   ctx.lineWidth=1.5;
   ctx.fillRect(lx,ly,lw,lh);
   ctx.strokeRect(lx,ly,lw,lh);
@@ -3154,11 +3215,11 @@ function drawLabel(ac, isCon, isSel, color, br) {
   ctx.lineWidth=1; ctx.stroke();
 
   ctx.font=`bold 14px "Orbitron",monospace`;
-  ctx.fillStyle=isCon?'#ff0000': isSel?'#ff8800':'#000000';
+  ctx.fillStyle=isCon?'#ff0000': isSel?'#b9c000':'#000000';
   ctx.fillText(ac.callsign, lx+4, ly+16);
 
   ctx.font=`12px "Share Tech Mono",monospace`;
-  ctx.fillStyle=isCon?'#ff0000': isSel?'#ff8800':'#000000';
+  ctx.fillStyle=isCon?'#ff0000': isSel?'#b9c000':'#000000';
   ctx.fillText(`${ac.dep}→${ac.dest}`, lx+4, ly+31);
   
   // Velocidade em KT
@@ -3166,7 +3227,7 @@ function drawLabel(ac, isCon, isSel, color, br) {
   
   // FL separado para realçar
   ctx.font=`bold 13px "Share Tech Mono",monospace`;
-  ctx.fillStyle=isCon?'#ff0000': isSel?'#ff8800':'#ffcc00';
+  ctx.fillStyle=isCon?'#ff0000': isSel?'#b9c000':'#d6d100';
   ctx.fillText(`FL${ac.fl}`, lx+4, ly+56);
 
   ctx.font=`12px "Share Tech Mono",monospace`;
@@ -3283,11 +3344,100 @@ function showPanel(ac) {
 }
 
 function hidePanel() {
+  stopRedirectPanelDrag();
   selectedAC=null;
   document.getElementById('redirect-panel').classList.add('hidden');
 }
 
+function beginRedirectPanelDrag(clientX, clientY, pointerId = null) {
+  const panel = document.getElementById('redirect-panel');
+  if (!panel || panel.classList.contains('hidden')) return;
+
+  panelDrag.dragging = false;
+  panelDrag.pointerId = pointerId;
+  panelDrag.startPointerX = clientX;
+  panelDrag.startPointerY = clientY;
+  panelDrag.startLeft = parseFloat(panel.style.left) || 0;
+  panelDrag.startTop = parseFloat(panel.style.top) || 0;
+}
+
+function moveRedirectPanelDrag(clientX, clientY) {
+  const panel = document.getElementById('redirect-panel');
+  if (!panel || panel.classList.contains('hidden')) return;
+
+  const movedDistance = Math.hypot(clientX - panelDrag.startPointerX, clientY - panelDrag.startPointerY);
+  if (!panelDrag.dragging) {
+    if (movedDistance < 8) return;
+    panelDrag.dragging = true;
+    const title = panel.querySelector('.rp-title');
+    if (title) title.classList.add('dragging');
+  }
+
+  const deltaX = clientX - panelDrag.startPointerX;
+  const deltaY = clientY - panelDrag.startPointerY;
+  const panelRect = panel.getBoundingClientRect();
+  const wrapRect = wrap.getBoundingClientRect();
+  const maxLeft = Math.max(0, wrapRect.width - panelRect.width);
+  const maxTop = Math.max(0, wrapRect.height - panelRect.height);
+  const nextLeft = Math.max(0, Math.min(maxLeft, panelDrag.startLeft + deltaX));
+  const nextTop = Math.max(0, Math.min(maxTop, panelDrag.startTop + deltaY));
+
+  panel.style.left = `${nextLeft}px`;
+  panel.style.top = `${nextTop}px`;
+}
+
+function stopRedirectPanelDrag() {
+  const panel = document.getElementById('redirect-panel');
+  const title = panel ? panel.querySelector('.rp-title') : null;
+  if (title) title.classList.remove('dragging');
+
+  if (panelDrag.dragging) {
+    suppressPanelActionUntil = Date.now() + 220;
+  }
+
+  panelDrag.dragging = false;
+  panelDrag.pointerId = null;
+}
+
+function handleRedirectPanelPointerDown(event) {
+  beginRedirectPanelDrag(event.clientX, event.clientY, event.pointerId ?? null);
+  const title = event.currentTarget;
+  if (title.setPointerCapture && event.pointerId !== undefined) {
+    title.setPointerCapture(event.pointerId);
+  }
+}
+
+function handleRedirectPanelMouseDown(event) {
+  beginRedirectPanelDrag(event.clientX, event.clientY, null);
+}
+
+function handleRedirectPanelTouchStart(event) {
+  const touch = event.touches && event.touches[0];
+  if (!touch) return;
+  beginRedirectPanelDrag(touch.clientX, touch.clientY, null);
+}
+
+function handleRedirectPanelPointerMove(event) {
+  if (panelDrag.pointerId !== null && event.pointerId !== undefined && event.pointerId !== panelDrag.pointerId) return;
+  moveRedirectPanelDrag(event.clientX, event.clientY);
+  if (panelDrag.dragging) event.preventDefault();
+}
+
+function handleRedirectPanelMouseMove(event) {
+  if (panelDrag.pointerId !== null) return;
+  moveRedirectPanelDrag(event.clientX, event.clientY);
+}
+
+function handleRedirectPanelTouchMove(event) {
+  if (panelDrag.pointerId !== null) return;
+  const touch = event.touches && event.touches[0];
+  if (!touch) return;
+  moveRedirectPanelDrag(touch.clientX, touch.clientY);
+  if (panelDrag.dragging) event.preventDefault();
+}
+
 function doRedirect(hdg) {
+  if (Date.now() < suppressPanelActionUntil) return;
   if (!selectedAC) return;
   markTutorialAction('issueCommand');
   selectedAC.targetHdg=hdg;
@@ -3299,6 +3449,7 @@ function doRedirect(hdg) {
 }
 
 function doChangeLevel(fl) {
+  if (Date.now() < suppressPanelActionUntil) return;
   if (!selectedAC) return;
   markTutorialAction('issueCommand');
   selectedAC.fl=fl;
@@ -3310,11 +3461,12 @@ function doChangeLevel(fl) {
 }
 
 function doChangeSpeed(gs) {
+  if (Date.now() < suppressPanelActionUntil) return;
   if (!selectedAC) return;
   markTutorialAction('issueCommand');
   selectedAC.gs=gs;
-  // Recalcula a velocidade em pixels/frame baseado no novo gs (+15% na velocidade geral)
-  selectedAC.speed = gs * 0.00039204 * GAME_SPEED_MULT;
+  // Mantém coerência com o scaling de nível usado no spawn.
+  selectedAC.speed = gs * 0.00039204 * GAME_SPEED_MULT * Math.pow(1.1, level - 1);
   selectedAC.separated=true;
   score+=5; updateScoreUI();
   const cs=selectedAC.callsign;
@@ -3326,17 +3478,21 @@ function doChangeSpeed(gs) {
 function handleStart(clientX, clientY) {
   const rect=canvas.getBoundingClientRect();
   const mx=clientX-rect.left, my=clientY-rect.top;
+  const DRAG_THRESHOLD_PX = 10;
   
   // Verifica clique na etiqueta para drag
   for (let ac of aircraft) {
     const { lx, ly, lw, lh } = getLabelRect(ac);
     
     if (mx >= lx && mx <= lx+lw && my >= ly && my <= ly+lh) {
-      draggingLabel = ac;
-      isDragging = true;
+      labelPressCandidate = ac;
+      dragStartPoint = { x: mx, y: my, threshold: DRAG_THRESHOLD_PX };
       return;
     }
   }
+
+  labelPressCandidate = null;
+  dragStartPoint = null;
   
   // Se não clicou na etiqueta, verifica clique na aeronave
   let hit=null, minD=Infinity;
@@ -3349,10 +3505,19 @@ function handleStart(clientX, clientY) {
 }
 
 function handleMove(clientX, clientY) {
-  if (!isDragging || !draggingLabel) return;
-  
   const rect=canvas.getBoundingClientRect();
   const mx=clientX-rect.left, my=clientY-rect.top;
+
+  // Converte pressão na etiqueta em drag somente após um pequeno deslocamento.
+  if (!isDragging && labelPressCandidate && dragStartPoint) {
+    const moved = Math.hypot(mx - dragStartPoint.x, my - dragStartPoint.y);
+    if (moved >= dragStartPoint.threshold) {
+      draggingLabel = labelPressCandidate;
+      isDragging = true;
+    }
+  }
+
+  if (!isDragging || !draggingLabel) return;
   
   // Calcula o ângulo e distância da etiqueta baseado na posição do mouse
   const dx = mx - draggingLabel.x;
@@ -3365,8 +3530,15 @@ function handleMove(clientX, clientY) {
 }
 
 function handleEnd() {
+  // Toque/clique curto na etiqueta abre o menu de interação da aeronave.
+  if (!isDragging && labelPressCandidate) {
+    selectAC(labelPressCandidate);
+  }
+
   isDragging = false;
   draggingLabel = null;
+  labelPressCandidate = null;
+  dragStartPoint = null;
 }
 
 // Mouse events
@@ -3429,6 +3601,7 @@ function goToMenu() {
   markTutorialAction('openMenu');
   gamePaused = true;
   cancelAnimationFrame(rafId);
+  rafId = null;
   document.getElementById('start-overlay').classList.remove('hidden');
   document.getElementById('btn-resume').style.display = gameStarted ? 'block' : 'none';
   document.getElementById('btn-restart').style.display = gameStarted ? 'block' : 'none';
@@ -3527,7 +3700,7 @@ function updateHighScoresDisplay() {
 }
 
 function restartGame() {
-  console.log('🔄 restartGame() called, gameStarted =', gameStarted);
+  debugLog('🔄 restartGame() called, gameStarted =', gameStarted);
   closeInteractiveTutorial(false);
   aircraft=[]; score=0; level=1; gameOver=false; gamePaused=false;
   pendingCollisionScore = null;
@@ -3547,46 +3720,47 @@ function restartGame() {
   document.getElementById('modal-overlay').classList.add('hidden');
   document.getElementById('name-entry').classList.add('hidden');
   document.getElementById('player-name-input').value='';
-  document.getElementById('modal-action-btn').textContent='[ SALVAR E NOVO TURNO ]';
+  document.getElementById('modal-action-btn').textContent = STRINGS[lang].modalSave;
   document.getElementById('start-overlay').classList.add('hidden');
   hidePanel();
-  console.log('✓ hidePanel() completed');
+  debugLog('✓ hidePanel() completed');
   updateScoreUI();
-  console.log('✓ updateScoreUI() completed');
+  debugLog('✓ updateScoreUI() completed');
   if (gameStarted) {
-    console.log('✓ gameStarted is true, calling loop()...');
+    debugLog('✓ gameStarted is true, calling loop()...');
     loop();
   } else {
-    console.error('✗ gameStarted is false, loop() NOT called!');
+    debugLog('✗ gameStarted is false, loop() NOT called!');
   }
 }
 
 // ── LOOP ──────────────────────────────────────
 function loop() {
-  console.log('🔁 loop() called, frame:', frame, 'gameOver:', gameOver);
+  debugLog('🔁 loop() called, frame:', frame, 'gameOver:', gameOver, 'gamePaused:', gamePaused);
   try {
     update();
-    console.log('  ✓ update() completed');
+    debugLog('  ✓ update() completed');
   } catch(e) {
     console.error('  ✗ update() failed:', e.message, e.stack);
   }
   try {
     draw();
-    console.log('  ✓ draw() completed');
+    debugLog('  ✓ draw() completed');
   } catch(e) {
     console.error('  ✗ draw() failed:', e.message, e.stack);
   }
   try {
     updateSidebar();
-    console.log('  ✓ updateSidebar() completed');
+    debugLog('  ✓ updateSidebar() completed');
   } catch(e) {
     console.error('  ✗ updateSidebar() failed:', e.message, e.stack);
   }
-  if (!gameOver) {
-    console.log('  🔄 Scheduling next frame...');
+  if (!gameOver && !gamePaused) {
+    debugLog('  🔄 Scheduling next frame...');
     rafId=requestAnimationFrame(loop);
   } else {
-    console.log('  ⏸️ gameOver is true, stopping loop');
+    rafId = null;
+    debugLog('  ⏸️ Loop stopped:', gameOver ? 'gameOver' : 'gamePaused');
   }
 }
 
@@ -3595,11 +3769,25 @@ window.addEventListener('resize',()=>{resize();});
 window.addEventListener('pointermove', handleTutorialCardPointerMove);
 window.addEventListener('pointerup', stopTutorialCardDrag);
 window.addEventListener('pointercancel', stopTutorialCardDrag);
+window.addEventListener('pointermove', handleRedirectPanelPointerMove);
+window.addEventListener('pointerup', stopRedirectPanelDrag);
+window.addEventListener('pointercancel', stopRedirectPanelDrag);
 window.addEventListener('mousemove', handleTutorialCardMouseMove);
 window.addEventListener('mouseup', stopTutorialCardDrag);
+window.addEventListener('mousemove', handleRedirectPanelMouseMove);
+window.addEventListener('mouseup', stopRedirectPanelDrag);
 window.addEventListener('touchmove', handleTutorialCardTouchMove, { passive: false });
 window.addEventListener('touchend', handleTutorialCardTouchEnd);
 window.addEventListener('touchcancel', handleTutorialCardTouchEnd);
+window.addEventListener('touchmove', handleRedirectPanelTouchMove, { passive: false });
+window.addEventListener('touchend', stopRedirectPanelDrag);
+window.addEventListener('touchcancel', stopRedirectPanelDrag);
+const redirectPanel = document.getElementById('redirect-panel');
+if (redirectPanel) {
+  redirectPanel.addEventListener('pointerdown', handleRedirectPanelPointerDown);
+  redirectPanel.addEventListener('mousedown', handleRedirectPanelMouseDown);
+  redirectPanel.addEventListener('touchstart', handleRedirectPanelTouchStart, { passive: false });
+}
 window.addEventListener('load',()=>{ 
   console.log('🚀 Window loaded!');
   applyLang();
