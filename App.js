@@ -39,10 +39,7 @@ export default function App() {
     if (Platform.OS !== 'android') return;
 
     try {
-      // Keep Android system navigation hidden while allowing temporary swipe reveal.
-      await NavigationBar.setPositionAsync('absolute');
-      await NavigationBar.setBehaviorAsync('overlay-swipe');
-      await NavigationBar.setBackgroundColorAsync('#040a06');
+      // In edge-to-edge mode, only a subset of navigation bar APIs is supported.
       await NavigationBar.setButtonStyleAsync('light');
       await NavigationBar.setVisibilityAsync('hidden');
     } catch (error) {
@@ -135,9 +132,6 @@ export default function App() {
           console.warn('WebView error: ', nativeEvent);
         }}
         onLoadEnd={() => console.log('WebView loaded')}
-        onLoadProgress={() => {
-          applyAndroidImmersiveMode();
-        }}
       />
     </View>
   );
