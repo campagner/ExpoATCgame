@@ -519,19 +519,28 @@ body::before {
   letter-spacing: 2px;
 }
 #tips-screen .instructions {
-  text-align: justify;
-  text-justify: inter-word;
-  font-size: 9px;
+  font-size: 14px;
   color: var(--text);
-  margin: 17px 0;
-  line-height: 1.6;
+  margin: 0;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 #tips-screen .instructions div {
-  margin-bottom: 7px;
-  padding-left: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(0,0,0,0.18);
+  border-left: 2px solid var(--amber);
+  border-radius: 0 6px 6px 0;
+  padding: 9px 12px;
 }
 #tips-screen .instructions span {
-  color: var(--green);
+  color: var(--amber);
+  font-size: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 #start-screen button {
   margin-top: 21px;
@@ -692,15 +701,16 @@ body::before {
 /* ── MODAL DICAS ── */
 #tips-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.95);
+  background: rgba(0,0,0,0.92);
   display: flex; align-items:center; justify-content:center;
   z-index: 601;
 }
 #tips-screen {
-  background: var(--panel);
-  border: 3px solid var(--amber);
-  box-shadow: 0 0 50px rgba(255,170,0,0.35);
-  padding: 34px 30px;
+  background: linear-gradient(160deg, #525252 0%, #3e3e3e 100%);
+  border: 2px solid var(--amber);
+  border-radius: 12px;
+  box-shadow: 0 0 60px rgba(214,209,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+  padding: 30px 26px 24px;
   text-align: left;
   min-width: 280px;
   max-width: 460px;
@@ -708,30 +718,38 @@ body::before {
 }
 #tips-screen h2 {
   font-family: 'Orbitron', monospace;
-  font-size: 22px;
+  font-size: 20px;
   color: var(--amber);
-  text-shadow: 0 0 20px var(--amber);
-  margin-bottom: 14px;
-  letter-spacing: 3px;
+  text-shadow: 0 0 18px rgba(214,209,0,0.7);
+  margin-bottom: 0;
+  letter-spacing: 4px;
   text-align: center;
+}
+#tips-screen .tips-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber), transparent);
+  margin: 14px 0 18px;
+  opacity: 0.6;
 }
 #tips-screen button {
   background: transparent;
   border: 2px solid var(--green);
+  border-radius: 6px;
   color: var(--green);
   font-family: 'Orbitron', monospace;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   letter-spacing: 2px;
-  padding: 10px 20px;
+  padding: 11px 20px;
   cursor: pointer;
   width: 100%;
-  text-shadow: 0 0 8px var(--green);
-  margin-top: 12px;
+  text-shadow: 0 0 8px rgba(204,204,204,0.5);
+  margin-top: 18px;
+  transition: background 0.15s, color 0.15s;
 }
 #tips-screen button:active {
   background: var(--green);
-  color:#000;
+  color: #1a1a1a;
   text-shadow: none;
 }
 #tips-overlay.hidden { display:none; }
@@ -1138,6 +1156,7 @@ body::before {
 <div id="tips-overlay" class="hidden">
   <div id="tips-screen">
     <h2 id="tips-title">DICAS</h2>
+    <div class="tips-divider"></div>
     <div class="instructions">
       <div><span>▸</span> Clique nas pistas, na etiqueta ou nas strips na barra inferior para abrir menu de ações</div>
       <div><span>▸</span> Altere proa, nível e velocidade</div>
